@@ -1,118 +1,160 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import SplashScreen from './src/screens/SplashScreen';
+import SearchScreen from './src/screens/SearchScreen';
+import SearchResultsScreen from './src/screens/SearchResultsScreen';
+import SearchRecommendScreen from './src/screens/SearchRecommendScreen';
+import ErrorScreen from './src/screens/ErrorScreen';
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const Stack = createStackNavigator();
+
+export default function App() {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
+    <NavigationContainer>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#000',
+            borderBottomLeftRadius: 10,
+            borderBottomRightRadius: 10,
+            height: 100,
           },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: 'bold',
           },
-        ]}>
-        {children}
-      </Text>
-    </View>
+          headerTitleAlign: 'center',
+        }}
+        initialRouteName="SplashScreen">
+        <Stack.Screen
+          name="SplashScreen"
+          component={SplashScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          options={{
+            headerLeft: () => <></>,
+            headerTitle: () => (
+              <View style={styles.headerTitle}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={require('./src/assets/splashIcon.png')}
+                    style={styles.logo}
+                  />
+                </View>
+                <Text style={styles.title}>Shopping Assistant</Text>
+              </View>
+            ),
+            headerRight: () => (
+              <Image
+                source={require('./src/assets/images/home.png')}
+                style={styles.icon}
+              />
+            ),
+          }}
+          name="SearchScreen"
+          component={SearchScreen}
+        />
+        <Stack.Screen
+          name="SearchResultsScreen"
+          component={SearchResultsScreen}
+          options={{
+            headerLeft: () => <></>,
+            headerTitle: () => (
+              <View style={styles.headerTitle}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={require('./src/assets/splashIcon.png')}
+                    style={styles.logo}
+                  />
+                </View>
+                <Text style={styles.title}>Search Results</Text>
+              </View>
+            ),
+            headerRight: () => (
+              <Image
+                source={require('./src/assets/images/home.png')}
+                style={styles.icon}
+              />
+            ),
+          }}
+        />
+        <Stack.Screen
+          options={{
+            headerLeft: () => <></>,
+            headerTitle: () => (
+              <View style={styles.headerTitle}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={require('./src/assets/splashIcon.png')}
+                    style={styles.logo}
+                  />
+                </View>
+                <Text style={styles.title}>Recommendation</Text>
+              </View>
+            ),
+            headerRight: () => (
+              <Image
+                source={require('./src/assets/images/home.png')}
+                style={styles.icon}
+              />
+            ),
+          }}
+          name="SearchRecommendScreen"
+          component={SearchRecommendScreen}
+        />
+        <Stack.Screen
+          options={{
+            headerLeft: () => <></>,
+            headerTitle: () => (
+              <View style={styles.headerTitle}>
+                <Text style={styles.title}>Error</Text>
+              </View>
+            ),
+            headerRight: () => (
+              <Image
+                source={require('./src/assets/images/home.png')}
+                style={styles.icon}
+              />
+            ),
+          }}
+          name="ErrorScreen"
+          component={ErrorScreen}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  headerTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  imageContainer: {
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 40,
+    height: 40,
+    marginRight: 10,
+    borderRadius: 100,
   },
-  sectionDescription: {
-    marginTop: 8,
+  logo: {
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+  },
+  title: {
+    color: '#fff',
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: 'bold',
   },
-  highlight: {
-    fontWeight: '700',
+  icon: {
+    marginRight: 15,
   },
 });
-
-export default App;
