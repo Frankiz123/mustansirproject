@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,83 +6,76 @@ import {
   TouchableOpacity,
   Image,
   Text,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-
-import axios from 'axios';
-
-import SearchBox from '../components/SearchBox';
-import ItemCard from '../components/ItemCard';
 import {useNavigation} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 const SearchScreen = () => {
   const navigation = useNavigation();
+  const [query, setQuery] = useState('');
+  const recentSearches = ['Headphones', 'Dress', 'Laptops'];
 
-  const items = ['Headphones', 'Dress', 'Laptops'];
-
-  const fetchProducts = useCallback(async () => {
-    const url =
-      'https://14c45500-3e9b-4922-a8d5-8875f6740d48.mock.pstmn.io/search_products';
-    const query = 'RGB keyboard'; // Hardcoded query
-
-    try {
-      const response = await axios.post(url, {
-        query, // Send the query in the body of the request
-      });
-      console.log(response.data); // Handle the response data
-    } catch (error) {
-      console.error('Error making API request:', error); // Handle errors
+  const handleSearch = () => {
+    if (query.trim()) {
+      navigation.navigate('SearchResultsScreen', {query});
     }
-  }, []);
-
-  // useEffect(() => {
-  //   const delayDebounce = setTimeout(() => {
-  //     fetchProducts();
-  //   }, 100); // Debounce API calls
-  //   return () => clearTimeout(delayDebounce);
-  // }, [fetchProducts]);
-
-  const nextScreenPress = () => navigation.navigate('SearchResultsScreen');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.container}>
-        <View style={styles.mainImageContainer}>
-          <Image
-            source={require('../assets/splashIcon.png')}
-            style={styles.mainImageStyle}
-          />
-          <Text style={styles.mainText}>
-            Tap the microphone to speak your query
-          </Text>
-        </View>
-        <View style={styles.mainContainerStyle}>
-          <TextInput placeholder="Enter Product" style={styles.inputStyle} />
-          <TouchableOpacity
-            onPress={nextScreenPress}
-            style={styles.containerImage}>
-            <Image
-              source={require('../assets/images/send.png')}
-              style={styles.imageStyle}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.footer}>
-          <Text style={styles.footerLabel}>Recent Searches</Text>
-          <View style={styles.containerDotsFooter}>
-            {items.map((item, index) => (
-              <View key={index} style={styles.itemContainer}>
-                <View style={styles.dot} />
-                <Text style={styles.text}>{item}</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          keyboardVerticalOffset={50}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View style={styles.container}>
+            <View style={styles.mainImageContainer}>
+              <Image
+                source={require('../assets/splashIcon.png')}
+                style={styles.mainImageStyle}
+              />
+            </View>
+            <View style={styles.mainContainerStyle}>
+              <TextInput
+                placeholder="Enter Product"
+                style={styles.inputStyle}
+                value={query}
+                onChangeText={setQuery}
+              />
+              <TouchableOpacity
+                onPress={handleSearch}
+                style={styles.containerImage}>
+                <Image
+                  source={require('../assets/images/send.png')}
+                  style={styles.imageStyle}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.footer}>
+              <Text style={styles.footerLabel}>Recent Searches</Text>
+              <View style={styles.containerDotsFooter}>
+                {recentSearches.map((item, index) => (
+                  <View key={index} style={styles.itemContainer}>
+                    <View style={styles.dot} />
+                    <Text style={styles.text}>{item}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
           </View>
-        </View>
-      </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 };
+
 export default SearchScreen;
+
+// [Styles: Same as before]
 
 const styles = StyleSheet.create({
   mainImageContainer: {

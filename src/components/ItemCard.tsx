@@ -1,140 +1,132 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+  Dimensions,
+} from 'react-native';
+
+const {width} = Dimensions.get('window');
 
 interface IItemCard {
   onPress: () => void;
+  item: {
+    title: string;
+    price: string;
+    thumbnail: string;
+    link: string;
+    source: string;
+  };
 }
 
-const ItemCard: React.FC<IItemCard> = ({onPress}) => {
+const ItemCard: React.FC<IItemCard> = ({item, onPress}) => {
+  const handleBuyNowPress = () => {
+    if (item.link) {
+      Linking.openURL(item.link).catch(err =>
+        console.error('Failed to open URL:', err),
+      );
+    }
+  };
+  // return (
+  //   <TouchableOpacity
+  //     disabled={true}
+  //     onPress={onPress}
+  //     style={styles.container}>
+  //     <Image source={{uri: item?.thumbnail}} style={styles.image} />
+  //     <View style={styles.mainContainer}>
+  //       <View style={styles.mainTextContainer}>
+  //         <Text style={styles.mainText}>{item?.title}</Text>
+  //       </View>
+  //       <View style={styles.containerImageText}>
+  //         <View>
+  //           <Text style={styles.mainTextLink}>{item?.source}</Text>
+  //           <Text style={styles.mainTextAmount}>{item?.price}</Text>
+  //         </View>
+  //         <View style={styles.buttonBuyContainer}>
+  //           <TouchableOpacity
+  //             onPress={handleBuyNowPress}
+  //             style={styles.buttonBuy}>
+  //             <Text style={styles.buttonBuyText}>Buy Now</Text>
+  //           </TouchableOpacity>
+  //         </View>
+  //       </View>
+  //     </View>
+  //   </TouchableOpacity>
+  // );
+
   return (
-    <TouchableOpacity onPress={onPress} style={styles.container}>
-      <View style={styles.mainContainer}>
-        <Image
-          source={require('../assets/images/characterImage.png')}
-          style={styles.image}
-        />
-        <View style={styles.containerImageText}>
-          <Text style={styles.mainText}>
-            Women Floral Print Puff Sleeve Fit
-          </Text>
-          <View style={styles.containerMain}>
-            <View>
-              <Text style={styles.mainTextLink}>Myntra.con</Text>
-              <Text style={styles.mainTextAmount}>$20</Text>
-            </View>
-            <View style={styles.buttonBuyContainer}>
-              <TouchableOpacity style={styles.buttonBuy}>
-                <Text style={styles.buttonBuyText}>Buy Now</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+    <View style={styles.card}>
+      <Image
+        source={{uri: item?.thumbnail}} // Replace with your image URL or require()
+        style={styles.image}
+      />
+      <View style={styles.details}>
+        <Text style={styles.title}>{item?.title}</Text>
+        <Text style={styles.subtitle}>{item?.source}</Text>
+        <Text style={styles.price}>{item.price}</Text>
       </View>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.buyButton}>
+        <Text style={styles.buyButtonText}>Buy Now</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 export default ItemCard;
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     flexDirection: 'row',
-    paddingTop: 17,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-  containerImageText: {},
-  mainText: {
-    paddingHorizontal: 10,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  containerMain: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  buttonBuyContainer: {
-    justifyContent: 'center',
-  },
-  buttonBuy: {
-    backgroundColor: '#FF5722',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-  },
-  buttonBuyText: {
-    fontWeight: '500',
-    fontSize: 16,
-    color: 'white',
-  },
-  mainTextLink: {
-    paddingHorizontal: 10,
-    marginTop: 15,
-    textDecorationLine: 'underline',
-    fontWeight: '500',
-    color: '#757575',
-  },
-  mainTextAmount: {
-    paddingHorizontal: 10,
-    fontWeight: '700',
-    fontSize: 20,
-    paddingTop: 10,
-  },
-
-  mainContainer: {
-    flexDirection: 'row',
-  },
-
-  textMainContainer: {
-    backgroundColor: 'white',
-  },
-  textMain: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 16,
-    paddingHorizontal: 10,
-  },
-  textSecondContainer: {
-    // width: 80,
-    paddingTop: 20,
-    marginLeft: 15,
-  },
-  textSecond: {
-    fontFamily: 'Poppins-Medium',
-    fontSize: 14,
-    color: '#757575',
-    textDecorationLine: 'underline',
-  },
-  bottomContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  textThirdContainer: {
-    // width: 42,
-    // height: 24,
-    // marginLeft: 15,
-  },
-  textThird: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 22,
-    color: 'black',
-    textDecorationLine: 'underline',
-  },
-  button: {
-    height: 30,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginTop: 10,
-    backgroundColor: '#FF5722',
     alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    margin: 10,
+    width: width * 0.9,
     alignSelf: 'center',
   },
-  buttonText: {
-    fontFamily: 'Poppins-Medium',
+  image: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    resizeMode: 'contain',
+  },
+  details: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  title: {
     fontSize: 16,
-    color: 'white',
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    marginVertical: 6,
+    textDecorationLine: 'underline',
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  buyButton: {
+    backgroundColor: '#FF6F00',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  buyButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
