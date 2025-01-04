@@ -9,6 +9,8 @@ import SearchScreen from './src/screens/SearchScreen';
 import SearchResultsScreen from './src/screens/SearchResultsScreen';
 import SearchRecommendScreen from './src/screens/SearchRecommendScreen';
 import ErrorScreen from './src/screens/ErrorScreen';
+import RegisterScreen from './src/screens/RegisterScreen'; // Import RegisterScreen
+import LoginScreen from './src/screens/LoginScreen';
 
 const Stack = createStackNavigator();
 
@@ -126,10 +128,25 @@ export default function App() {
           name="ErrorScreen"
           component={ErrorScreen}
         />
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name="RegisterScreen"
+          component={RegisterScreen}
+        />
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name="LoginScreen"
+          component={LoginScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
 const styles = StyleSheet.create({
   headerTitle: {
     flexDirection: 'row',
