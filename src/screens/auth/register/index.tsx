@@ -33,23 +33,51 @@ const RegisterScreen = () => {
     navigation.goBack();
   };
 
-  const callApiSignUp = useCallback(() => {
+  // const callApiSignUp = useCallback(() => {
+  //   const date = new Date();
+  //   const isoString = date.toISOString();
+  //   dispatch(
+  //     registerApiHandler({
+  //       name: name,
+  //       email: email,
+  //       created_at: isoString,
+  //       updated_at: isoString,
+  //       password: passwordValue,
+  //       password_confirm: confirmPasswordValue,
+  //       role: '',
+  //       verified: false,
+  //       verification_code: '',
+  //     }),
+  //   );
+  // }, [confirmPasswordValue, dispatch, email, name, passwordValue]);
+
+  const callApiSignUp = useCallback(async () => {
     const date = new Date();
     const isoString = date.toISOString();
-    dispatch(
-      registerApiHandler({
-        name: name,
-        email: email,
-        created_at: isoString,
-        updated_at: isoString,
-        password: passwordValue,
-        password_confirm: confirmPasswordValue,
-        role: '',
-        verified: false,
-        verification_code: '',
-      }),
-    );
-  }, [confirmPasswordValue, dispatch, email, name, passwordValue]);
+    try {
+      const resultAction = await dispatch(
+        registerApiHandler({
+          name: name,
+          email: email,
+          created_at: isoString,
+          updated_at: isoString,
+          password: passwordValue,
+          password_confirm: confirmPasswordValue,
+          role: '',
+          verified: false,
+          verification_code: '',
+        }),
+      );
+      if (resultAction) {
+        console.log('Registration successful:', resultAction.payload);
+        navigation.navigate('LoginScreen');
+      } else {
+        console.error('Registration failed:', resultAction);
+      }
+    } catch (error) {
+      console.error('An error occurred during registration:', error);
+    }
+  }, [confirmPasswordValue, dispatch, email, name, passwordValue, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>

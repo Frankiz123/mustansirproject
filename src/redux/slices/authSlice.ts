@@ -23,7 +23,7 @@ const authSlice = createSlice({
     clearToken(state) {
       state.token = null;
       state.isAuthenticated = false;
-      AsyncStorage.removeItem('jwtToken'); // Remove token from AsyncStorage
+      AsyncStorage.removeItem('jwtToken');
     },
   },
   extraReducers: builder => {
@@ -37,6 +37,7 @@ const authSlice = createSlice({
           state.loading = false;
         },
       )
+
       .addCase(
         registerApiHandler.rejected,
         (state, action: PayloadAction<any>) => {
@@ -48,10 +49,19 @@ const authSlice = createSlice({
       .addCase(loginApiHandler.pending, state => {
         state.loading = true;
       })
+      // .addCase(
+      //   loginApiHandler.fulfilled,
+      //   (state, action: PayloadAction<any>) => {
+      //     state.loading = false;
+      //   },
+      // )
       .addCase(
         loginApiHandler.fulfilled,
-        (state, action: PayloadAction<any>) => {
+        (state, action: PayloadAction<string>) => {
+          state.token = action.payload;
+          state.isAuthenticated = true;
           state.loading = false;
+          AsyncStorage.setItem('jwtToken', action.payload);
         },
       )
       .addCase(

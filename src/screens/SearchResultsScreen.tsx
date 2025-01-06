@@ -97,7 +97,6 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import ItemCard from '../components/ItemCard';
-
 const SearchResultsScreen = ({route}) => {
   const {query} = route.params || {};
   const [searchResults, setSearchResults] = useState([]);
@@ -106,8 +105,9 @@ const SearchResultsScreen = ({route}) => {
 
   const fetchSearchResults = async query => {
     setLoading(true);
-    const url = 'http://13.59.192.80:8000/api/search_products';
-    const token = '493c42937886cGuTRdvN127360454';
+    const url = 'http://3.142.36.68/search_products';
+    const token =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3Q1QGdtYWlsLmNvbSIsImV4cCI6MTczODc2ODcxNX0.lGCFM0JY-FoBPF7FzyTQ1gGUBuDcsC9VFxsL3u7hhT4';
 
     try {
       const response = await axios.post(
@@ -116,7 +116,8 @@ const SearchResultsScreen = ({route}) => {
         {
           headers: {
             accept: 'application/json',
-            token: token,
+            // token: token,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         },

@@ -25,9 +25,20 @@ const LoginScreen = () => {
 
   const dispatch = useDispatch<AppDispatch>();
 
+  // const loginHandler = useCallback(() => {
+  //   dispatch(loginApiHandler({email: email, password: password}));
+  // }, [dispatch, email, password]);
   const loginHandler = useCallback(() => {
-    dispatch(loginApiHandler({email: email, password: password}));
-  }, [dispatch, email, password]);
+    dispatch(loginApiHandler({email, password}))
+      .unwrap()
+      .then(() => {
+        navigation.navigate('SearchScreen'); // Navigate to SearchScreen
+      })
+      .catch(error => {
+        console.error('Login failed:', error);
+        // alert(error); // Display error to the user
+      });
+  }, [dispatch, email, password, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
