@@ -1,17 +1,26 @@
 import React, {useEffect} from 'react';
 import {View, Text, Image, StyleSheet} from 'react-native';
 
+import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 
+import {RootState} from '../redux/store';
+
 const SplashScreenComponent = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const {isAuthenticated} = useSelector((state: RootState) => state.auth);
+
   useEffect(() => {
     setTimeout(() => {
-      // navigation.navigate('SearchScreen');
-      // navigation.navigate('RegisterScreen');
-      navigation.navigate('LoginScreen');
+      console.log('isAuthenticated :: ', isAuthenticated);
+
+      if (isAuthenticated) {
+        navigation.navigate('SearchScreen');
+        return;
+      }
+      navigation.replace('Auth', {screen: 'LoginScreen'});
     }, 2000);
-  }, [navigation]);
+  }, [isAuthenticated, navigation]);
 
   return (
     <View style={styles.container}>
