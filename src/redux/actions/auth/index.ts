@@ -2,7 +2,6 @@ import {createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 import {baseUrl} from '../../../utils/Network';
-import {setToken} from '../../slices/authSlice';
 
 interface IAuthRegister {
   email: string;
@@ -60,25 +59,9 @@ export const registerApiHandler = createAsyncThunk(
   },
 );
 
-// export const loginApiHandler = createAsyncThunk(
-//   'auth/login',
-//   async ({email, password}: IAuthLogin, {rejectWithValue}) => {
-//     try {
-//       const response = await axios.post(`${baseUrl}/auth/login`, {
-//         email,
-//         password,
-//       });
-
-//       console.log('auth Login Response ::: ', response);
-//       //   return token;
-//     } catch (error: any) {
-//       return rejectWithValue(error.response?.data?.message || 'Login failed');
-//     }
-//   },
-// );
 export const loginApiHandler = createAsyncThunk(
   'auth/login',
-  async ({email, password}: IAuthLogin, {rejectWithValue, dispatch}) => {
+  async ({email, password}: IAuthLogin, {rejectWithValue}) => {
     try {
       const response = await axios.post(`${baseUrl}/auth/login`, {
         email,
@@ -86,7 +69,6 @@ export const loginApiHandler = createAsyncThunk(
       });
 
       const {access_token} = response.data;
-      dispatch(setToken(access_token));
       return access_token;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');

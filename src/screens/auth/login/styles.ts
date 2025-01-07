@@ -1,6 +1,12 @@
 import {StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  mt20: {
+    marginTop: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F9FAFF',
@@ -10,6 +16,7 @@ const styles = StyleSheet.create({
   ScrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   header: {
     marginTop: 60,

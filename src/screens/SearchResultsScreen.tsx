@@ -1,90 +1,3 @@
-// import React from 'react';
-// import {
-//   View,
-//   StyleSheet,
-//   TextInput,
-//   Image,
-//   TouchableOpacity,
-// } from 'react-native';
-
-// import {useNavigation} from '@react-navigation/native';
-
-// import ItemCard from '../components/ItemCard';
-
-// const SearchResultsScreen = () => {
-//   const navigation = useNavigation();
-//   // const route = useRoute();
-
-//   // const query = route.params?.query;
-
-//   // if (!query) {
-//   //   return <Text>No query provided</Text>;
-//   // }
-
-//   const nextScreenPress = () => navigation.navigate('SearchRecommendScreen');
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.mainContainerStyle}>
-//         <TextInput placeholder="Enter Product" style={styles.inputStyle} />
-//         <TouchableOpacity style={styles.containerImage}>
-//           <Image
-//             source={require('../assets/images/send.png')}
-//             style={styles.imageStyle}
-//           />
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.itemCard}>
-//         <ItemCard onPress={nextScreenPress} />
-//         <ItemCard onPress={nextScreenPress} />
-//         <ItemCard onPress={nextScreenPress} />
-//         <ItemCard onPress={nextScreenPress} />
-//       </View>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     alignItems: 'center',
-//   },
-//   title: {
-//     fontSize: 20,
-//     fontWeight: 'bold',
-//   },
-//   mainContainerStyle: {
-//     marginTop: 20,
-//     flexDirection: 'row',
-//   },
-//   imageStyle: {
-//     right: 3,
-//   },
-//   containerImage: {
-//     width: 46,
-//     height: 46,
-//     backgroundColor: '#FF5722',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderRadius: 23,
-//     marginLeft: 10,
-//   },
-//   inputStyle: {
-//     borderWidth: 1,
-//     padding: 10,
-//     borderColor: '#E0E0E0',
-//     borderRadius: 24.5,
-//     width: '75%',
-//   },
-//   itemCard: {
-//     flex: 1,
-//     marginTop: 36,
-//     alignItems: 'center',
-//   },
-// });
-
-// export default SearchResultsScreen;
-
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -94,20 +7,24 @@ import {
   TouchableOpacity,
   Text,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
+
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import ItemCard from '../components/ItemCard';
+
 const SearchResultsScreen = ({route}) => {
   const {query} = route.params || {};
   const [searchResults, setSearchResults] = useState([]);
   const [input, setInput] = useState(query || '');
   const [loading, setLoading] = useState(false);
 
-  const fetchSearchResults = async query => {
+  const fetchSearchResults = async (query: string) => {
     setLoading(true);
     const url = 'http://3.142.36.68/search_products';
-    const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3Q1QGdtYWlsLmNvbSIsImV4cCI6MTczODc2ODcxNX0.lGCFM0JY-FoBPF7FzyTQ1gGUBuDcsC9VFxsL3u7hhT4';
+    const token = await AsyncStorage.getItem('jwtToken');
 
     try {
       const response = await axios.post(
@@ -168,7 +85,11 @@ const SearchResultsScreen = ({route}) => {
         </TouchableOpacity>
       </View>
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator
+          style={styles.activityIndicator}
+          size={20}
+          color={'#FF5722'}
+        />
       ) : (
         <FlatList
           data={searchResults}
@@ -189,6 +110,11 @@ export default SearchResultsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  activityIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   mainContainerStyle: {
     marginTop: 20,

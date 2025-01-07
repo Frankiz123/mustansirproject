@@ -9,6 +9,7 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   // navigate(arg0: string): unknown;
   SplashScreen: undefined;
+  ReadEmailScreen: undefined;
   Auth: NavigatorScreenParams<AuthStackParamList>;
   SearchScreen: undefined;
   SearchResultsScreen: undefined;

@@ -15,7 +15,7 @@ const SplashScreenComponent = () => {
       console.log('isAuthenticated :: ', isAuthenticated);
 
       if (isAuthenticated) {
-        navigation.navigate('SearchScreen');
+        navigation.replace('ReadEmailScreen');
         return;
       }
       navigation.replace('Auth', {screen: 'LoginScreen'});

@@ -10,6 +10,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -26,50 +27,52 @@ const SearchScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView
-          style={styles.container}
-          keyboardVerticalOffset={50}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={styles.container}>
-            <View style={styles.mainImageContainer}>
-              <Image
-                source={require('../assets/splashIcon.png')}
-                style={styles.mainImageStyle}
-              />
-            </View>
-            <View style={styles.mainContainerStyle}>
-              <TextInput
-                placeholder="Enter Product"
-                style={styles.inputStyle}
-                value={query}
-                onChangeText={setQuery}
-              />
-              <TouchableOpacity
-                onPress={handleSearch}
-                style={styles.containerImage}>
+    <ScrollView contentContainerStyle={styles.flexGrow1} style={styles.flex}>
+      <SafeAreaView style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            style={styles.container}
+            keyboardVerticalOffset={50}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <View style={styles.container}>
+              <View style={styles.mainImageContainer}>
                 <Image
-                  source={require('../assets/images/send.png')}
-                  style={styles.imageStyle}
+                  source={require('../assets/splashIcon.png')}
+                  style={styles.mainImageStyle}
                 />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.footer}>
-              <Text style={styles.footerLabel}>Recent Searches</Text>
-              <View style={styles.containerDotsFooter}>
-                {recentSearches.map((item, index) => (
-                  <View key={index} style={styles.itemContainer}>
-                    <View style={styles.dot} />
-                    <Text style={styles.text}>{item}</Text>
-                  </View>
-                ))}
+              </View>
+              <View style={styles.mainContainerStyle}>
+                <TextInput
+                  placeholder="Enter Product"
+                  style={styles.inputStyle}
+                  value={query}
+                  onChangeText={setQuery}
+                />
+                <TouchableOpacity
+                  onPress={handleSearch}
+                  style={styles.containerImage}>
+                  <Image
+                    source={require('../assets/images/send.png')}
+                    style={styles.imageStyle}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.footer}>
+                <Text style={styles.footerLabel}>Recent Searches</Text>
+                <View style={styles.containerDotsFooter}>
+                  {recentSearches.map((item, index) => (
+                    <View key={index} style={styles.itemContainer}>
+                      <View style={styles.dot} />
+                      <Text style={styles.text}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
+    </ScrollView>
   );
 };
 
@@ -78,6 +81,12 @@ export default SearchScreen;
 // [Styles: Same as before]
 
 const styles = StyleSheet.create({
+  flexGrow1: {
+    flexGrow: 1,
+  },
+  flex: {
+    flex: 1,
+  },
   mainImageContainer: {
     flex: 1,
     justifyContent: 'center',

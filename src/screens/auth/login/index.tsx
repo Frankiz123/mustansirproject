@@ -1,4 +1,3 @@
-import {useNavigation} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
 import {
   View,
@@ -9,34 +8,42 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import styles from './styles';
-import {useDispatch} from 'react-redux';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+
+import {useNavigation} from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useDispatch, useSelector} from 'react-redux';
+
 import {AppDispatch} from '../../../redux/store';
 import {loginApiHandler} from '../../../redux/actions';
+import {AppStackParamList} from '../../../navigation/routes';
+import {selectAuth} from '../../../redux/selectors';
+
+import styles from './styles';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const navigation = useNavigation();
+
+  const {loading} = useSelector(selectAuth);
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AppStackParamList>>();
 
   const dispatch = useDispatch<AppDispatch>();
 
-  // const loginHandler = useCallback(() => {
-  //   dispatch(loginApiHandler({email: email, password: password}));
-  // }, [dispatch, email, password]);
   const loginHandler = useCallback(() => {
     dispatch(loginApiHandler({email, password}))
       .unwrap()
       .then(() => {
-        navigation.navigate('SearchScreen'); // Navigate to SearchScreen
+        navigation.navigate('ReadEmailScreen'); // Navigate to SearchScreen
       })
       .catch(error => {
         console.error('Login failed:', error);
-        // alert(error); // Display error to the user
       });
   }, [dispatch, email, password, navigation]);
 
@@ -44,7 +51,7 @@ const LoginScreen = () => {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{flex: 1}}>
+        style={styles.flex}>
         <ScrollView
           contentContainerStyle={styles.ScrollContainer}
           keyboardShouldPersistTaps="handled">
@@ -57,7 +64,7 @@ const LoginScreen = () => {
 
           <View style={styles.form}>
             <TextInput
-              style={[styles.input, {marginTop: 20}]}
+              style={[styles.input, styles.mt20]}
               placeholder="Email"
               value={email}
               onChangeText={val => setEmail(val)}
@@ -86,7 +93,11 @@ const LoginScreen = () => {
           </View>
 
           <TouchableOpacity onPress={loginHandler} style={styles.button}>
-            <Text style={styles.buttonText}>Sign In</Text>
+            {loading ? (
+              <ActivityIndicator size={20} color={'white'} />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.signupContainer}>

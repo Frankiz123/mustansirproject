@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {AuthState} from '../reduxTypes';
 import {loginApiHandler, registerApiHandler} from '../actions';
+import {collectBearerTokenHandler} from '../../utils/apiUtility';
 
 const initialState: AuthState = {
   token: null,
@@ -33,14 +34,14 @@ const authSlice = createSlice({
       })
       .addCase(
         registerApiHandler.fulfilled,
-        (state, action: PayloadAction<any>) => {
+        (state, _action: PayloadAction<any>) => {
           state.loading = false;
         },
       )
 
       .addCase(
         registerApiHandler.rejected,
-        (state, action: PayloadAction<any>) => {
+        (state, _action: PayloadAction<any>) => {
           state.loading = false;
         },
       );
@@ -49,24 +50,19 @@ const authSlice = createSlice({
       .addCase(loginApiHandler.pending, state => {
         state.loading = true;
       })
-      // .addCase(
-      //   loginApiHandler.fulfilled,
-      //   (state, action: PayloadAction<any>) => {
-      //     state.loading = false;
-      //   },
-      // )
       .addCase(
         loginApiHandler.fulfilled,
         (state, action: PayloadAction<string>) => {
           state.token = action.payload;
           state.isAuthenticated = true;
           state.loading = false;
+          collectBearerTokenHandler(action.payload);
           AsyncStorage.setItem('jwtToken', action.payload);
         },
       )
       .addCase(
         loginApiHandler.rejected,
-        (state, action: PayloadAction<any>) => {
+        (state, _action: PayloadAction<any>) => {
           state.loading = false;
         },
       );

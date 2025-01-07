@@ -8,18 +8,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
+
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import BackIcon from 'react-native-vector-icons/AntDesign';
 import {useNavigation} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
-import styles from './styles';
-import {useDispatch} from 'react-redux';
 import {registerApiHandler} from '../../../redux/actions';
 import {AppDispatch} from '../../../redux/store';
+import {AuthStackParamList} from '../../../navigation/routes';
+
+import styles from './styles';
+import {selectAuth} from '../../../redux/selectors';
 
 const RegisterScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
+
+  const {loading} = useSelector(selectAuth);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [passwordValue, setPasswordValue] = useState('');
@@ -27,29 +36,12 @@ const RegisterScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const backPress = () => {
     navigation.goBack();
   };
-
-  // const callApiSignUp = useCallback(() => {
-  //   const date = new Date();
-  //   const isoString = date.toISOString();
-  //   dispatch(
-  //     registerApiHandler({
-  //       name: name,
-  //       email: email,
-  //       created_at: isoString,
-  //       updated_at: isoString,
-  //       password: passwordValue,
-  //       password_confirm: confirmPasswordValue,
-  //       role: '',
-  //       verified: false,
-  //       verification_code: '',
-  //     }),
-  //   );
-  // }, [confirmPasswordValue, dispatch, email, name, passwordValue]);
 
   const callApiSignUp = useCallback(async () => {
     const date = new Date();
@@ -158,7 +150,11 @@ const RegisterScreen = () => {
           </View>
 
           <TouchableOpacity onPress={callApiSignUp} style={styles.button}>
-            <Text style={styles.buttonText}>Sign up</Text>
+            {loading ? (
+              <ActivityIndicator color={'white'} size={20} />
+            ) : (
+              <Text style={styles.buttonText}>Sign up</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

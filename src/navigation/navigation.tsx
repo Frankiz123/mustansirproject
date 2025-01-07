@@ -14,6 +14,7 @@ import ErrorScreen from '../screens/ErrorScreen';
 
 import AuthNavigator from './authNavigator';
 import {AppStackParamList} from './routes';
+import {ReadEmailScreen} from '../screens/dashboard';
 
 const Stack = createStackNavigator<AppStackParamList>();
 
@@ -36,11 +37,39 @@ const AppNavigator = () => {
           headerTitleAlign: 'center',
         }}
         initialRouteName="SplashScreen">
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen
+          options={{headerShown: false}}
+          name="SplashScreen"
+          component={SplashScreen}
+        />
         <Stack.Screen
           options={{headerShown: false}}
           name="Auth"
           component={AuthNavigator}
+        />
+        <Stack.Screen
+          name="ReadEmailScreen"
+          component={ReadEmailScreen}
+          options={{
+            headerLeft: () => <></>,
+            headerTitle: () => (
+              <View style={styles.headerTitle}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={require('../assets/splashIcon.png')}
+                    style={styles.logo}
+                  />
+                </View>
+                <Text style={styles.title}>Read Email</Text>
+              </View>
+            ),
+            headerRight: () => (
+              <Image
+                source={require('../assets/images/home.png')}
+                style={styles.icon}
+              />
+            ),
+          }}
         />
         <Stack.Screen
           name="SearchScreen"
