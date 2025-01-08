@@ -40,7 +40,7 @@ const LoginScreen = () => {
     dispatch(loginApiHandler({email, password}))
       .unwrap()
       .then(() => {
-        navigation.navigate('ReadEmailScreen'); // Navigate to SearchScreen
+        navigation.replace('ReadEmailScreen'); // Navigate to SearchScreen
       })
       .catch(error => {
         console.error('Login failed:', error);
@@ -93,12 +93,11 @@ const LoginScreen = () => {
           </View>
 
           <TouchableOpacity onPress={loginHandler} style={styles.button}>
-            {/* {loading ? (
+            {loading ? (
               <ActivityIndicator size={20} color={'white'} />
             ) : (
               <Text style={styles.buttonText}>Sign In</Text>
-              )} */}
-            <Text style={styles.buttonText}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.signupContainer}>

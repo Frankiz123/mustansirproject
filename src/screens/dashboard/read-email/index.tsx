@@ -68,6 +68,10 @@ const ReadEmail: React.FC<IReadEmail> = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    callReadEmail();
+  }, [callReadEmail]);
+
+  useEffect(() => {
     if (read_auth_url) {
       openURL(read_auth_url);
     }
@@ -78,10 +82,19 @@ const ReadEmail: React.FC<IReadEmail> = () => {
       Alert.alert('Please Enter Code');
       return;
     }
-    dispatch(readEmailAuthorizeApiHandler({code: codeVerification}));
-    setTimeout(() => {
-      dispatch(readEmailReadInboxApiHandler());
-    }, 1400);
+    dispatch(readEmailAuthorizeApiHandler({code: codeVerification}))
+      .unwrap()
+      .then(res => {
+        console.log('res', res);
+        if (res) {
+          setTimeout(() => {
+            dispatch(readEmailReadInboxApiHandler());
+          }, 1400);
+        }
+      })
+      .catch(error => {
+        Alert.alert('error', error);
+      });
   };
 
   return (
@@ -100,7 +113,7 @@ const ReadEmail: React.FC<IReadEmail> = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         disabled={readEmailLoading}
         style={styles.buttonStyle}
         onPress={callReadEmail}>
@@ -109,7 +122,7 @@ const ReadEmail: React.FC<IReadEmail> = () => {
         ) : (
           <Text style={styles.buttonLabel}>Read Email</Text>
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

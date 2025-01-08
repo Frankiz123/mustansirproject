@@ -4,6 +4,7 @@ import {createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {baseUrl} from '../../../utils/Network';
+import {Alert} from 'react-native';
 
 interface AuthUrlResponse {
   auth_url: string;
@@ -52,7 +53,11 @@ export const readEmailAuthorizeApiHandler = createAsyncThunk(
         return response.status === 200 ? true : false;
       }
     } catch (error: any) {
-      console.error('Error:', error.response?.data || error.message);
+      console.error(
+        'Error:',
+        error.response?.data.detail || error.message.detail,
+      );
+      Alert.alert('Error', 'You enter wrong code');
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   },
