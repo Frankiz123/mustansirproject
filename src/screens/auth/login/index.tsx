@@ -93,11 +93,12 @@ const LoginScreen = () => {
           </View>
 
           <TouchableOpacity onPress={loginHandler} style={styles.button}>
-            {loading ? (
+            {/* {loading ? (
               <ActivityIndicator size={20} color={'white'} />
             ) : (
               <Text style={styles.buttonText}>Sign In</Text>
-            )}
+              )} */}
+            <Text style={styles.buttonText}>Sign In</Text>
           </TouchableOpacity>
 
           <View style={styles.signupContainer}>

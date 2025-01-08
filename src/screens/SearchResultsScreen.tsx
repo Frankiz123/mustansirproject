@@ -23,7 +23,7 @@ const SearchResultsScreen = ({route}) => {
 
   const fetchSearchResults = async (query: string) => {
     setLoading(true);
-    const url = 'http://3.142.36.68/search_products';
+    const url = 'https://corto-dev.axcelerateai.com/search_products';
     const token = await AsyncStorage.getItem('jwtToken');
 
     try {
