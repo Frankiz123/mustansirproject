@@ -20,6 +20,45 @@ interface IAuthLogin {
   password: string;
 }
 
+// export const registerApiHandler = createAsyncThunk(
+//   'auth/register',
+//   async (
+//     {
+//       email,
+//       name,
+//       role,
+//       created_at,
+//       updated_at,
+//       password,
+//       password_confirm,
+//       verification_code,
+//       verified,
+//     }: IAuthRegister,
+//     {rejectWithValue},
+//   ) => {
+//     try {
+//       const response = await axios.post(`${baseUrl}/auth/register`, {
+//         email,
+//         name,
+//         role,
+//         created_at,
+//         updated_at,
+//         password,
+//         password_confirm,
+//         verification_code,
+//         verified,
+//       });
+
+//       console.log('auth Register Response ::: ', response);
+//       return response.data.verified;
+//     } catch (error: any) {
+//       return rejectWithValue(
+//         error.response?.data?.message || 'Register failed',
+//       );
+//     }
+//   },
+// );
+
 export const registerApiHandler = createAsyncThunk(
   'auth/register',
   async (
@@ -50,11 +89,9 @@ export const registerApiHandler = createAsyncThunk(
       });
 
       console.log('auth Register Response ::: ', response);
-      return response.data.verified;
+      return response.data.detail;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Register failed',
-      );
+      return rejectWithValue(error.response?.data?.detail || 'Register failed');
     }
   },
 );

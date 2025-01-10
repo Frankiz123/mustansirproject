@@ -38,14 +38,16 @@ const styles = StyleSheet.create({
     borderColor: '#D6DFF2',
     borderWidth: 1,
     height: 50,
-    marginBottom: 15,
+    // marginBottom: 15,
+    marginTop: 15,
     paddingHorizontal: 15,
     fontSize: 16,
     color: '#333',
   },
   passwordContainer: {
     position: 'relative',
-    marginBottom: 15,
+    // marginBottom: 15,
+    marginTop: 15,
   },
   inputWithIcon: {
     backgroundColor: '#F4F7FC',
@@ -54,6 +56,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: 50,
     paddingHorizontal: 15,
+    // marginTop: 15,
     fontSize: 16,
     color: '#333',
   },
@@ -87,6 +90,12 @@ const styles = StyleSheet.create({
   },
   mt20: {
     marginTop: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
+    // marginBottom: 10,
   },
 });
 

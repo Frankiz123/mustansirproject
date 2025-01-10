@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     borderColor: '#D6DFF2',
     borderWidth: 1,
     height: 50,
-    marginBottom: 15,
+    // marginBottom: 15,
     paddingHorizontal: 15,
     fontSize: 16,
     color: '#333',
@@ -99,6 +99,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FF5722',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
   },
 });
 
