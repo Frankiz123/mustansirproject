@@ -30,10 +30,10 @@ const ReadEmail: React.FC<IReadEmail> = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const dispatch = useDispatch<AppDispatch>();
-  const {isAuthorize, readInbox, readEmailLoading, read_auth_url} =
-    useSelector(selectReadEmail);
+  const {isAuthorize, readInbox, read_auth_url} = useSelector(selectReadEmail);
 
   const [codeVerification, setCodeVerification] = useState('');
+  const [loader, setLoader] = useState(false);
 
   useEffect(() => {
     if (isAuthorize && readInbox) {
@@ -82,6 +82,7 @@ const ReadEmail: React.FC<IReadEmail> = () => {
       Alert.alert('Please Enter Code');
       return;
     }
+    setLoader(true);
     dispatch(readEmailAuthorizeApiHandler({code: codeVerification}))
       .unwrap()
       .then(res => {
@@ -89,10 +90,12 @@ const ReadEmail: React.FC<IReadEmail> = () => {
         if (res) {
           setTimeout(() => {
             dispatch(readEmailReadInboxApiHandler());
+            setLoader(false);
           }, 1400);
         }
       })
       .catch(error => {
+        setLoader(false);
         Alert.alert('error', error);
       });
   };
@@ -109,7 +112,11 @@ const ReadEmail: React.FC<IReadEmail> = () => {
         />
 
         <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-          <Text style={styles.buttonText}>Proceed to Search Products</Text>
+          {loader ? (
+            <ActivityIndicator color={'white'} size={20} />
+          ) : (
+            <Text style={styles.buttonText}>Proceed to Search Products</Text>
+          )}
         </TouchableOpacity>
       </View>
 

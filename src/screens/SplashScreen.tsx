@@ -9,18 +9,23 @@ import {RootState} from '../redux/store';
 const SplashScreenComponent = () => {
   const navigation = useNavigation<any>();
   const {isAuthenticated} = useSelector((state: RootState) => state.auth);
+  const {isAuthorize, readInbox} = useSelector(
+    (state: RootState) => state.readEmail,
+  );
 
   useEffect(() => {
     setTimeout(() => {
-      console.log('isAuthenticated :: ', isAuthenticated);
-
       if (isAuthenticated) {
+        if (isAuthorize && readInbox) {
+          navigation.replace('SearchScreen');
+          return;
+        }
         navigation.replace('ReadEmailScreen');
         return;
       }
       navigation.replace('Auth', {screen: 'LoginScreen'});
     }, 2000);
-  }, [isAuthenticated, navigation]);
+  }, [isAuthenticated, isAuthorize, navigation, readInbox]);
 
   return (
     <View style={styles.container}>
