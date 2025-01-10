@@ -39,6 +39,7 @@ const SearchResultsScreen = ({route}) => {
           },
         },
       );
+      console.log(response.data.results);
       setSearchResults(response.data.results || []);
     } catch (error) {
       console.error('Error fetching search results:', error);

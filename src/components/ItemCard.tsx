@@ -19,6 +19,7 @@ interface IItemCard {
     thumbnail: string;
     link: string;
     source: string;
+    delivery: string;
   };
 }
 
@@ -67,8 +68,9 @@ const ItemCard: React.FC<IItemCard> = ({item, onPress}) => {
         <Text style={styles.title}>{item?.title}</Text>
         <Text style={styles.subtitle}>{item?.source}</Text>
         <Text style={styles.price}>{item.price}</Text>
+        <Text style={styles.delivery}>{item.delivery}</Text>
       </View>
-      <TouchableOpacity style={styles.buyButton}>
+      <TouchableOpacity style={styles.buyButton} onPress={handleBuyNowPress}>
         <Text style={styles.buyButtonText}>Buy Now</Text>
       </TouchableOpacity>
     </View>
@@ -117,6 +119,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+  },
+  delivery: {
+    fontSize: 14,
+    color: '#888',
+    marginVertical: 6,
+    // textDecorationLine: 'underline',
   },
   buyButton: {
     backgroundColor: '#FF6F00',
