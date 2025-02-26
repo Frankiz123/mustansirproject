@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -11,20 +11,123 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import Tts from 'react-native-tts';
+import Voice from '@react-native-voice/voice';
 
 const SearchScreen = () => {
   const navigation = useNavigation();
   const [query, setQuery] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
   const recentSearches = ['Headphones', 'Dress', 'Laptops'];
 
-  const handleSearch = () => {
-    if (query.trim()) {
-      navigation.navigate('SearchResultsScreen', {query});
+  // Request Microphone & Speech Permissions (For Android)
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const micPermission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        );
+        if (micPermission !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert(
+            'Permission Denied',
+            'Microphone access is required for voice search.',
+          );
+        }
+      } catch (error) {
+        console.error('Permission error:', error);
+      }
     }
   };
+
+  useEffect(() => {
+    requestPermissions();
+
+    // Set event listeners for voice recognition
+    Voice.onSpeechStart = () => setIsRecording(true);
+    Voice.onSpeechEnd = () => setIsRecording(false);
+    Voice.onSpeechResults = event => {
+      if (event.value && event.value.length > 0) {
+        const recognizedText = event.value[0];
+        setQuery(recognizedText);
+        handleSearch(recognizedText);
+      }
+    };
+    Voice.onSpeechError = error => {
+      console.error('Speech Recognition Error:', error);
+      setIsRecording(false);
+      Alert.alert('Error', 'Could not process speech. Please try again.');
+    };
+
+    // Register TTS event listeners
+    Tts.addEventListener('tts-start', event => console.log('TTS Start', event));
+    Tts.addEventListener('tts-progress', event =>
+      console.log('TTS Progress', event),
+    );
+    Tts.addEventListener('tts-finish', event =>
+      console.log('TTS Finish', event),
+    );
+    Tts.addEventListener('tts-cancel', event =>
+      console.log('TTS Cancel', event),
+    );
+
+    return () => {
+      Voice.removeAllListeners();
+      Tts.stop();
+      Tts.removeEventListener('tts-start');
+      Tts.removeEventListener('tts-progress');
+      Tts.removeEventListener('tts-finish');
+      Tts.removeEventListener('tts-cancel');
+    };
+  }, []);
+
+  const handleMicPress = async () => {
+    if (isRecording) {
+      await Voice.stop();
+      setIsRecording(false);
+    } else {
+      try {
+        await Voice.destroy();
+        await Voice.start('en-US');
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Speech recognition error:', error);
+      }
+    }
+  };
+  const playFillerAudio = async () => {
+    const messages = [
+      'Let me search',
+      "I'm searching the best deals",
+      'Checking Amazon and Walmart',
+      'Finishing up the search',
+    ];
+
+    for (const msg of messages) {
+      await Tts.speak(msg);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  };
+
+  const handleSearch = useCallback(
+    async query => {
+      try {
+        if (query.trim()) {
+          await playFillerAudio();
+          await Tts.speak(`Here are the results for ${query}.`);
+          navigation.navigate('SearchResultsScreen', {query});
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        navigation.navigate('SearchResultsScreen', {query});
+      }
+    },
+    [navigation],
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.flexGrow1} style={styles.flex}>
@@ -36,10 +139,16 @@ const SearchScreen = () => {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <View style={styles.container}>
               <View style={styles.mainImageContainer}>
-                <Image
-                  source={require('../assets/splashIcon.png')}
-                  style={styles.mainImageStyle}
-                />
+                <TouchableOpacity onPress={handleMicPress}>
+                  <Image
+                    source={
+                      isRecording
+                        ? require('../assets/images/micActive.png')
+                        : require('../assets/images/micButton.png')
+                    }
+                    style={styles.mainImageStyle}
+                  />
+                </TouchableOpacity>
               </View>
               <View style={styles.mainContainerStyle}>
                 <TextInput
@@ -49,7 +158,7 @@ const SearchScreen = () => {
                   onChangeText={setQuery}
                 />
                 <TouchableOpacity
-                  onPress={handleSearch}
+                  onPress={() => handleSearch(query)}
                   style={styles.containerImage}>
                   <Image
                     source={require('../assets/images/send.png')}
@@ -78,24 +187,15 @@ const SearchScreen = () => {
 
 export default SearchScreen;
 
-// [Styles: Same as before]
-
 const styles = StyleSheet.create({
-  flexGrow1: {
-    flexGrow: 1,
-  },
-  flex: {
-    flex: 1,
-  },
+  flexGrow1: {flexGrow: 1},
+  flex: {flex: 1},
   mainImageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  containerDotsFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  containerDotsFooter: {flexDirection: 'row', alignItems: 'center'},
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -106,46 +206,23 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#008080', // Teal dot color
-    marginRight: 5, // Space between dot and text
+    backgroundColor: '#008080',
+    marginRight: 5,
   },
   text: {
     fontSize: 14,
     color: '#333333',
     fontWeight: '400',
   },
-  mainText: {
-    textAlign: 'center',
-    fontSize: 21,
-    fontWeight: '400',
-    color: '#333333',
-    marginHorizontal: 80,
-    paddingTop: 10,
-  },
-  mainImageStyle: {
-    width: 200,
-    height: 200,
-  },
-  container: {
-    flex: 1,
-  },
-  searchBoxContainer: {
-    marginTop: 18,
-  },
-  itemCard: {
-    flex: 1,
-    marginTop: 36,
-    alignItems: 'center',
-  },
+  mainImageStyle: {width: 200, height: 200},
+  container: {flex: 1},
   mainContainerStyle: {
     marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  imageStyle: {
-    right: 3,
-  },
+  imageStyle: {right: 3},
   inputStyle: {
     borderWidth: 1,
     padding: 10,
@@ -162,13 +239,6 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     marginLeft: 10,
   },
-  footer: {
-    marginLeft: 30,
-    marginTop: 10,
-  },
-  footerLabel: {
-    fontWeight: '500',
-    fontSize: 16,
-    color: '#333333',
-  },
+  footer: {marginLeft: 30, marginTop: 10},
+  footerLabel: {fontWeight: '500', fontSize: 16, color: '#333333'},
 });
