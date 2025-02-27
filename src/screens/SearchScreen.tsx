@@ -43,17 +43,16 @@ const SearchScreen = () => {
       }
     }
   };
-
   useEffect(() => {
     requestPermissions();
 
-    // Set event listeners for voice recognition
     Voice.onSpeechStart = () => setIsRecording(true);
     Voice.onSpeechEnd = () => setIsRecording(false);
     Voice.onSpeechResults = event => {
       if (event.value && event.value.length > 0) {
         const recognizedText = event.value[0];
         setQuery(recognizedText);
+
         handleSearch(recognizedText);
       }
     };
@@ -63,42 +62,11 @@ const SearchScreen = () => {
       Alert.alert('Error', 'Could not process speech. Please try again.');
     };
 
-    // Register TTS event listeners
-    Tts.addEventListener('tts-start', event => console.log('TTS Start', event));
-    Tts.addEventListener('tts-progress', event =>
-      console.log('TTS Progress', event),
-    );
-    Tts.addEventListener('tts-finish', event =>
-      console.log('TTS Finish', event),
-    );
-    Tts.addEventListener('tts-cancel', event =>
-      console.log('TTS Cancel', event),
-    );
-
     return () => {
       Voice.removeAllListeners();
-      Tts.stop();
-      Tts.removeEventListener('tts-start');
-      Tts.removeEventListener('tts-progress');
-      Tts.removeEventListener('tts-finish');
-      Tts.removeEventListener('tts-cancel');
     };
   }, []);
 
-  const handleMicPress = async () => {
-    if (isRecording) {
-      await Voice.stop();
-      setIsRecording(false);
-    } else {
-      try {
-        await Voice.destroy();
-        await Voice.start('en-US');
-        setIsRecording(true);
-      } catch (error) {
-        console.error('Speech recognition error:', error);
-      }
-    }
-  };
   const playFillerAudio = async () => {
     const messages = [
       'Let me search',
@@ -112,7 +80,32 @@ const SearchScreen = () => {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   };
+  const handleMicPress = async () => {
+    if (isRecording) {
+      await Voice.stop();
+      setIsRecording(false);
 
+      if (query.trim()) {
+        handleSearch(query);
+      }
+    } else {
+      try {
+        await Voice.destroy();
+        await Voice.start('en-US');
+        setIsRecording(true);
+        setQuery('');
+      } catch (error) {
+        console.error('Speech recognition error:', error);
+      }
+    }
+  };
+
+  Voice.onSpeechResults = event => {
+    if (event.value && event.value.length > 0) {
+      const recognizedText = event.value[0];
+      setQuery(recognizedText);
+    }
+  };
   const handleSearch = useCallback(
     async query => {
       try {
@@ -120,6 +113,7 @@ const SearchScreen = () => {
           await playFillerAudio();
           await Tts.speak(`Here are the results for ${query}.`);
           navigation.navigate('SearchResultsScreen', {query});
+          setQuery('');
         }
       } catch (error) {
         console.error('Search error:', error);
@@ -128,6 +122,26 @@ const SearchScreen = () => {
     },
     [navigation],
   );
+  const handleManualSearch = () => {
+    navigation.navigate('SearchResultsScreen', {query});
+    setQuery('');
+  };
+
+  // const handleSearch = useCallback(
+  //   async query => {
+  //     try {
+  //       if (query.trim()) {
+  //         await playFillerAudio();
+  //         await Tts.speak(`Here are the results for ${query}.`);
+  //         navigation.navigate('SearchResultsScreen', {query});
+  //       }
+  //     } catch (error) {
+  //       console.error('Search error:', error);
+  //       navigation.navigate('SearchResultsScreen', {query});
+  //     }
+  //   },
+  //   [navigation],
+  // );
 
   return (
     <ScrollView contentContainerStyle={styles.flexGrow1} style={styles.flex}>
@@ -158,7 +172,7 @@ const SearchScreen = () => {
                   onChangeText={setQuery}
                 />
                 <TouchableOpacity
-                  onPress={() => handleSearch(query)}
+                  onPress={() => handleManualSearch()}
                   style={styles.containerImage}>
                   <Image
                     source={require('../assets/images/send.png')}

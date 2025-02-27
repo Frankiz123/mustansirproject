@@ -48,9 +48,19 @@ const SearchResultsScreen = ({route}) => {
     }
   };
 
+  // useEffect(() => {
+  //   if (query) {
+
+  //     fetchSearchResults(query);
+  //   }
+  // }, [query]);
   useEffect(() => {
     if (query) {
-      fetchSearchResults(query);
+      const delayFetch = setTimeout(() => {
+        fetchSearchResults(query);
+      }, 3000);
+
+      return () => clearTimeout(delayFetch);
     }
   }, [query]);
 
