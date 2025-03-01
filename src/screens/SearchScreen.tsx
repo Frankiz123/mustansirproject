@@ -19,6 +19,7 @@ import Tts from 'react-native-tts';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingModal from '../components/animationLoader';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 interface SearchResult {
   title: string;
@@ -46,6 +47,7 @@ const SearchScreen = () => {
   const [micRecording, setMicRecording] = useState(false);
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
   const recentSearches = ['Headphones', 'Dress', 'Laptops'];
+  const [textQuery, setTextQuery] = useState('');
 
   const [visible, setVisible] = useState(false);
 
@@ -75,6 +77,46 @@ const SearchScreen = () => {
       }
     }
   };
+  // const requestPermissions = async () => {
+  //   if (Platform.OS === 'android') {
+  //     try {
+  //       const granted = await PermissionsAndroid.requestMultiple([
+  //         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+  //       ]);
+
+  //       if (
+  //         granted['android.permission.RECORD_AUDIO'] ===
+  //           PermissionsAndroid.RESULTS.GRANTED &&
+  //         granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+  //           PermissionsAndroid.RESULTS.GRANTED &&
+  //         granted['android.permission.READ_EXTERNAL_STORAGE'] ===
+  //           PermissionsAndroid.RESULTS.GRANTED
+  //       ) {
+  //         console.log('Android permissions granted');
+  //       } else {
+  //         console.log('Android permissions denied');
+  //       }
+  //     } catch (err) {
+  //       console.warn('Android permission request error:', err);
+  //     }
+  //   } else if (Platform.OS === 'ios') {
+  //     try {
+  //       const permissionStatus = await check(PERMISSIONS.IOS.MICROPHONE);
+  //       if (permissionStatus !== RESULTS.GRANTED) {
+  //         const result = await request(PERMISSIONS.IOS.MICROPHONE);
+  //         if (result === RESULTS.GRANTED) {
+  //           console.log('iOS microphone permission granted');
+  //         } else {
+  //           console.log('iOS microphone permission denied');
+  //         }
+  //       }
+  //     } catch (err) {
+  //       console.warn('iOS permission request error:', err);
+  //     }
+  //   }
+  // };
 
   useEffect(() => {
     requestPermissions();
@@ -145,7 +187,10 @@ const SearchScreen = () => {
         setVisible(false);
         console.log('api successfull', json, response);
         // Tts.speak(json.message);
-        navigation.navigate('SearchResultsScreen', {query: json});
+        navigation.navigate('SearchResultsScreen', {
+          textQuery: null,
+          query: json,
+        });
       }
       // console.log('API response:', json);
       // setApiResult(json);
@@ -159,10 +204,9 @@ const SearchScreen = () => {
       Tts.speak('There was an error processing your request.');
     }
   };
-
   const handleSearch = () => {
-    if (query.trim()) {
-      navigation.navigate('SearchResultsScreen', {query});
+    if (textQuery.trim()) {
+      navigation.navigate('SearchResultsScreen', {textQuery, voiceQuery: null});
     }
   };
 
@@ -193,8 +237,8 @@ const SearchScreen = () => {
                 <TextInput
                   placeholder="Enter Product"
                   style={styles.inputStyle}
-                  value={query}
-                  onChangeText={setQuery}
+                  value={textQuery}
+                  onChangeText={setTextQuery}
                 />
                 <TouchableOpacity
                   onPress={handleSearch}
@@ -223,13 +267,13 @@ const SearchScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-              {apiResult && (
+              {/* {apiResult && (
                 <View style={styles.apiResultContainer}>
                   <Text style={styles.apiResultText}>
                     {JSON.stringify(apiResult)}
                   </Text>
                 </View>
-              )}
+              )} */}
               <View style={styles.footer}>
                 <Text style={styles.footerLabel}>Recent Searches</Text>
                 <View style={styles.containerDotsFooter}>
