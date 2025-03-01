@@ -1,179 +1,4 @@
-// import React, {useState} from 'react';
-// import {
-//   View,
-//   StyleSheet,
-//   TextInput,
-//   TouchableOpacity,
-//   Image,
-//   Text,
-//   TouchableWithoutFeedback,
-//   Keyboard,
-//   KeyboardAvoidingView,
-//   Platform,
-//   ScrollView,
-// } from 'react-native';
-// import {useNavigation} from '@react-navigation/native';
-// import {SafeAreaView} from 'react-native-safe-area-context';
-
-// const SearchScreen = () => {
-//   const navigation = useNavigation();
-//   const [query, setQuery] = useState('');
-//   const recentSearches = ['Headphones', 'Dress', 'Laptops'];
-
-//   const handleSearch = () => {
-//     if (query.trim()) {
-//       navigation.navigate('SearchResultsScreen', {query});
-//     }
-//   };
-
-//   return (
-//     <ScrollView contentContainerStyle={styles.flexGrow1} style={styles.flex}>
-//       <SafeAreaView style={styles.container}>
-//         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-//           <KeyboardAvoidingView
-//             style={styles.container}
-//             keyboardVerticalOffset={50}
-//             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-//             <View style={styles.container}>
-//               <View style={styles.mainImageContainer}>
-//                 <Image
-//                   source={require('../assets/splashIcon.png')}
-//                   style={styles.mainImageStyle}
-//                 />
-//               </View>
-//               <View style={styles.mainContainerStyle}>
-//                 <TextInput
-//                   placeholder="Enter Product"
-//                   style={styles.inputStyle}
-//                   value={query}
-//                   onChangeText={setQuery}
-//                 />
-//                 <TouchableOpacity
-//                   onPress={handleSearch}
-//                   style={styles.containerImage}>
-//                   <Image
-//                     source={require('../assets/images/send.png')}
-//                     style={styles.imageStyle}
-//                   />
-//                 </TouchableOpacity>
-//               </View>
-//               <View style={styles.footer}>
-//                 <Text style={styles.footerLabel}>Recent Searches</Text>
-//                 <View style={styles.containerDotsFooter}>
-//                   {recentSearches.map((item, index) => (
-//                     <View key={index} style={styles.itemContainer}>
-//                       <View style={styles.dot} />
-//                       <Text style={styles.text}>{item}</Text>
-//                     </View>
-//                   ))}
-//                 </View>
-//               </View>
-//             </View>
-//           </KeyboardAvoidingView>
-//         </TouchableWithoutFeedback>
-//       </SafeAreaView>
-//     </ScrollView>
-//   );
-// };
-
-// export default SearchScreen;
-
-// // [Styles: Same as before]
-
-// const styles = StyleSheet.create({
-//   flexGrow1: {
-//     flexGrow: 1,
-//   },
-//   flex: {
-//     flex: 1,
-//   },
-//   mainImageContainer: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   containerDotsFooter: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   itemContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginLeft: 5,
-//     marginTop: 10,
-//   },
-//   dot: {
-//     width: 8,
-//     height: 8,
-//     borderRadius: 4,
-//     backgroundColor: '#008080', // Teal dot color
-//     marginRight: 5, // Space between dot and text
-//   },
-//   text: {
-//     fontSize: 14,
-//     color: '#333333',
-//     fontWeight: '400',
-//   },
-//   mainText: {
-//     textAlign: 'center',
-//     fontSize: 21,
-//     fontWeight: '400',
-//     color: '#333333',
-//     marginHorizontal: 80,
-//     paddingTop: 10,
-//   },
-//   mainImageStyle: {
-//     width: 200,
-//     height: 200,
-//   },
-//   container: {
-//     flex: 1,
-//   },
-//   searchBoxContainer: {
-//     marginTop: 18,
-//   },
-//   itemCard: {
-//     flex: 1,
-//     marginTop: 36,
-//     alignItems: 'center',
-//   },
-//   mainContainerStyle: {
-//     marginTop: 20,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-//   imageStyle: {
-//     right: 3,
-//   },
-//   inputStyle: {
-//     borderWidth: 1,
-//     padding: 10,
-//     borderColor: '#E0E0E0',
-//     borderRadius: 24.5,
-//     width: '75%',
-//   },
-//   containerImage: {
-//     width: 46,
-//     height: 46,
-//     backgroundColor: '#FF5722',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderRadius: 23,
-//     marginLeft: 10,
-//   },
-//   footer: {
-//     marginLeft: 30,
-//     marginTop: 10,
-//   },
-//   footerLabel: {
-//     fontWeight: '500',
-//     fontSize: 16,
-//     color: '#333333',
-//   },
-// });
-
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect, useMemo} from 'react';
 import {
   View,
   StyleSheet,
@@ -192,6 +17,7 @@ import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import Tts from 'react-native-tts';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AnimatedLoader from 'react-native-animated-loader';
 
 interface SearchResult {
   title: string;
@@ -219,6 +45,8 @@ const SearchScreen = () => {
   const [micRecording, setMicRecording] = useState(false);
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
   const recentSearches = ['Headphones', 'Dress', 'Laptops'];
+
+  const [visible, setVisible] = useState(false);
 
   // Start recording when mic button is pressed
   const startRecording = async () => {
@@ -254,6 +82,7 @@ const SearchScreen = () => {
 
   // Send recorded audio file to API endpoint
   const sendAudioToApi = async filePath => {
+    setVisible(true);
     const token = await AsyncStorage.getItem('jwtToken');
     // Speak filler sentence while processing
     Tts.speak('Processing your request, please wait.');
@@ -281,6 +110,7 @@ const SearchScreen = () => {
 
       const json: SearchResponse = await response.json();
       if (response.status === 200) {
+        setVisible(false);
         console.log('api successfull', json, response);
         // Tts.speak(json.message);
         navigation.navigate('SearchResultsScreen', {query: json});
@@ -292,6 +122,7 @@ const SearchScreen = () => {
       //   Tts.speak(json.result);
       // }
     } catch (error) {
+      setVisible(false);
       console.error('Error sending audio to API:', error);
       Tts.speak('There was an error processing your request.');
     }
@@ -302,6 +133,22 @@ const SearchScreen = () => {
       navigation.navigate('SearchResultsScreen', {query});
     }
   };
+
+  const animationLoading = useMemo(() => {
+    return (
+      <AnimatedLoader
+        visible={visible}
+        overlayColor="rgba(255,255,255,0.75)"
+        animationStyle={styles.lottie}
+        speed={1}>
+        <Text>Doing something...</Text>
+      </AnimatedLoader>
+    );
+  }, [visible]);
+
+  if (visible) {
+    return <>{animationLoading}</>;
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.flexGrow1} style={styles.flex}>
@@ -327,17 +174,25 @@ const SearchScreen = () => {
                 />
                 <TouchableOpacity
                   onPress={handleSearch}
-                  style={styles.containerImage}>
+                  style={[
+                    styles.containerImage,
+                    micRecording && styles.sendButtonSmall, // Shrinks when recording
+                  ]}>
                   <Image
                     source={require('../assets/images/send.png')}
                     style={styles.imageStyle}
                   />
                 </TouchableOpacity>
+
                 {/* Mic Button: onPressIn starts recording, onPressOut stops */}
+
                 <TouchableOpacity
                   onPressIn={startRecording}
                   onPressOut={stopRecording}
-                  style={styles.micButton}>
+                  style={[
+                    styles.micButton,
+                    micRecording && styles.micButtonActive, // Apply larger size when recording
+                  ]}>
                   <Image
                     source={require('../assets/images/mic.png')}
                     style={styles.micImageStyle}
@@ -396,6 +251,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    // paddingVertical: 20,
+    height: 100,
   },
   inputStyle: {
     borderWidth: 1,
@@ -416,15 +273,39 @@ const styles = StyleSheet.create({
   imageStyle: {
     right: 3,
   },
+  // micButton: {
+  //   width: 46,
+  //   height: 46,
+  //   backgroundColor: '#008080', // Teal color for mic button
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   borderRadius: 23,
+  //   marginLeft: 10,
+  // },
   micButton: {
     width: 46,
     height: 46,
-    backgroundColor: '#008080', // Teal color for mic button
+    backgroundColor: '#008080',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 23,
     marginLeft: 10,
+    transition: 'all 0.2s ease-in-out', // Smooth transition
   },
+  micButtonActive: {
+    width: 56, // Increase size when pressed
+    height: 56,
+    borderRadius: 28, // Keep it circular
+    backgroundColor: '#007070', // Slightly darker color for effect
+  },
+
+  sendButtonSmall: {
+    width: 36, // Smaller size when mic is held
+    height: 36,
+    borderRadius: 18, // Keep proportions circular
+    backgroundColor: '#D84315', // Optional: change color slightly for effect
+  },
+
   micImageStyle: {
     width: 24,
     height: 24,
@@ -468,8 +349,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 20,
   },
+
   apiResultText: {
     color: '#333333',
     fontSize: 14,
+  },
+  lottie: {
+    width: 100,
+    height: 100,
   },
 });
