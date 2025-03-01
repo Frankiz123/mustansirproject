@@ -18,7 +18,7 @@ import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import Tts from 'react-native-tts';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AnimatedLoader from 'react-native-animated-loader';
+import LoadingModal from '../components/animationLoader';
 
 interface SearchResult {
   title: string;
@@ -167,15 +167,7 @@ const SearchScreen = () => {
   };
 
   const animationLoading = useMemo(() => {
-    return (
-      <AnimatedLoader
-        visible={visible}
-        overlayColor="rgba(255,255,255,0.75)"
-        animationStyle={styles.lottie}
-        speed={1}>
-        <Text>Doing something...</Text>
-      </AnimatedLoader>
-    );
+    return <LoadingModal visible={visible} />;
   }, [visible]);
 
   if (visible) {
