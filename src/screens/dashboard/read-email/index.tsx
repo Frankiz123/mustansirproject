@@ -36,9 +36,10 @@ const ReadEmail: React.FC<IReadEmail> = () => {
   const [loader, setLoader] = useState(false);
 
   useEffect(() => {
-    if (isAuthorize && readInbox) {
-      navigation.replace('SearchScreen');
-    }
+    // if (isAuthorize && readInbox) {
+    //   navigation.replace('SearchScreen');
+    // }
+    navigation.replace('SearchScreen');
   }, [isAuthorize, navigation, readInbox]);
 
   const onChangeCodeVerification = (value: string) =>

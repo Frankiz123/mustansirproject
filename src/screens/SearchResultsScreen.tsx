@@ -14,6 +14,26 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ItemCard from '../components/ItemCard';
+import Tts from 'react-native-tts';
+
+interface SearchResult {
+  title: string;
+  price: number;
+  source: string;
+  link: string;
+  thumbnail: string;
+  rating: number;
+  discount: string | null;
+  delivery: string | null;
+  email_discount: string | null;
+  email_coupon_code: string | null;
+}
+
+interface SearchResponse {
+  message: string;
+  audio_path: string;
+  results: SearchResult[];
+}
 
 const SearchResultsScreen = ({route}) => {
   const {query} = route.params || {};
@@ -21,36 +41,38 @@ const SearchResultsScreen = ({route}) => {
   const [input, setInput] = useState(query || '');
   const [loading, setLoading] = useState(false);
 
-  const fetchSearchResults = async (query: string) => {
-    setLoading(true);
-    const url = 'https://corto-dev.axcelerateai.com/search_products';
-    const token = await AsyncStorage.getItem('jwtToken');
+  // const fetchSearchResults = async (query: string) => {
+  //   setLoading(true);
+  //   const url = 'https://corto-dev.axcelerateai.com/search_products';
+  //   const token = await AsyncStorage.getItem('jwtToken');
 
-    try {
-      const response = await axios.post(
-        url,
-        {query},
-        {
-          headers: {
-            accept: 'application/json',
-            // token: token,
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-      console.log(response.data.results);
-      setSearchResults(response.data.results || []);
-    } catch (error) {
-      console.error('Error fetching search results:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     const response = await axios.post(
+  //       url,
+  //       {query},
+  //       {
+  //         headers: {
+  //           accept: 'application/json',
+  //           // token: token,
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       },
+  //     );
+  //     console.log(response.data.results);
+  //     setSearchResults(response.data.results || []);
+  //   } catch (error) {
+  //     console.error('Error fetching search results:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     if (query) {
-      fetchSearchResults(query);
+      Tts.speak(query.message);
+      setSearchResults(query.results);
+      // fetchSearchResults(query.message);
     }
   }, [query]);
 

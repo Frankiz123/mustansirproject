@@ -70,5 +70,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to the microphone to record audio for search.</string>
+
 </dict>
 </plist>

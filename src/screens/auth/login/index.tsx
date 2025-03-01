@@ -316,7 +316,7 @@ const LoginScreen = () => {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const validateInputs = () => {
+  const validateInputs = useCallback(() => {
     let isValid = true;
 
     if (!email) {
@@ -334,7 +334,7 @@ const LoginScreen = () => {
     }
 
     return isValid;
-  };
+  }, [email, password]);
 
   const loginHandler = useCallback(() => {
     if (!validateInputs()) {
@@ -344,7 +344,8 @@ const LoginScreen = () => {
     dispatch(loginApiHandler({email, password}))
       .unwrap()
       .then(() => {
-        navigation.replace('ReadEmailScreen');
+        // navigation.replace('ReadEmailScreen');
+        navigation.replace('SearchScreen');
       })
       .catch(error => {
         Alert.alert(
@@ -353,7 +354,7 @@ const LoginScreen = () => {
           [{text: 'OK'}], // Buttons
         );
       });
-  }, [dispatch, email, password, navigation]);
+  }, [validateInputs, dispatch, email, password, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>
