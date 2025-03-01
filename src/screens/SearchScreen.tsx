@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import Tts from 'react-native-tts';
@@ -47,6 +48,37 @@ const SearchScreen = () => {
   const recentSearches = ['Headphones', 'Dress', 'Laptops'];
 
   const [visible, setVisible] = useState(false);
+
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE, // Needed for accessing files
+        ]);
+
+        if (
+          granted['android.permission.RECORD_AUDIO'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.READ_EXTERNAL_STORAGE'] ===
+            PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          console.log('All permissions granted');
+        } else {
+          console.log('Permissions denied');
+        }
+      } catch (err) {
+        console.warn('Permission request error:', err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    requestPermissions();
+  }, []);
 
   // Start recording when mic button is pressed
   const startRecording = async () => {
