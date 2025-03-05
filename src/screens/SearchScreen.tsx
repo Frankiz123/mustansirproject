@@ -204,10 +204,12 @@ const SearchScreen = () => {
       Tts.speak('There was an error processing your request.');
     }
   };
+
   const handleSearch = () => {
     if (textQuery.trim()) {
       navigation.navigate('SearchResultsScreen', {textQuery, voiceQuery: null});
     }
+    setTextQuery('');
   };
 
   const animationLoading = useMemo(() => {

@@ -1,236 +1,4 @@
-// import React, {useEffect, useState, useRef} from 'react';
-// import {
-//   View,
-//   StyleSheet,
-//   TextInput,
-//   Image,
-//   TouchableOpacity,
-//   Text,
-//   FlatList,
-//   ActivityIndicator,
-// } from 'react-native';
-// import axios from 'axios';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-// import ItemCard from '../components/ItemCard';
-
-// interface SearchResult {
-//   title: string;
-//   price: number;
-//   source: string;
-//   link: string;
-//   thumbnail: string;
-//   rating: number;
-//   discount: string | null;
-//   delivery: string | null;
-//   email_discount: string | null;
-//   email_coupon_code: string | null;
-// }
-
-// interface SearchResponse {
-//   message: string;
-//   audio_path: string;
-//   results: SearchResult[];
-// }
-
-// const SearchResultsScreen = ({route}) => {
-//   const {query, textQuery} = route.params || {};
-//   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-//   const [input, setInput] = useState(textQuery || '');
-//   const [loading, setLoading] = useState(false);
-//   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
-//   let isPlaying = useRef(false);
-
-//   const fetchSearchResults = async (searchQuery: string) => {
-//     setLoading(true);
-//     const url = 'https://corto-dev.axcelerateai.com/search_products';
-//     const token = await AsyncStorage.getItem('jwtToken');
-
-//     try {
-//       const response = await axios.post<SearchResponse>(
-//         url,
-//         {query: searchQuery},
-//         {
-//           headers: {
-//             accept: 'application/json',
-//             Authorization: `Bearer ${token}`,
-//             'Content-Type': 'application/json',
-//           },
-//         },
-//       );
-//       setSearchResults(response.data.results || []);
-//     } catch (error) {
-//       console.error('Error fetching search results:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     let isMounted = true;
-//     let playbackListener: any = null;
-
-//     const playAudio = async () => {
-//       try {
-//         // Ensure any previous playback is stopped
-//         await audioRecorderPlayer.stopPlayer();
-//         audioRecorderPlayer.removePlayBackListener();
-
-//         const audioUrl = query.audio_path;
-//         console.log('Preloading audio:', audioUrl);
-
-//         // Add a small delay to ensure buffering before playback
-//         await new Promise(resolve => setTimeout(resolve, 1000));
-
-//         const path = await audioRecorderPlayer.startPlayer(audioUrl);
-//         console.log('Audio started:', path);
-//         isPlaying.current = true;
-
-//         playbackListener = audioRecorderPlayer.addPlayBackListener(e => {
-//           console.log(`Pos: ${e.currentPosition}, Dur: ${e.duration}`);
-
-//           // Ensure stopping only happens at the right time
-//           if (e.duration > 0 && e.currentPosition >= e.duration - 0.5) {
-//             setTimeout(() => {
-//               console.log('Audio playback completed');
-//               audioRecorderPlayer.stopPlayer();
-//               audioRecorderPlayer.removePlayBackListener();
-//               isPlaying.current = false;
-//             }, 500); // Slight buffer to prevent early stopping
-//           }
-//         });
-//       } catch (error) {
-//         console.error('Playback error:', error);
-//         isPlaying.current = false;
-//       }
-//     };
-
-//     if (query?.audio_path) {
-//       playAudio();
-//       setSearchResults(query.results || []);
-//     } else if (textQuery) {
-//       fetchSearchResults(textQuery);
-//     }
-
-//     return () => {
-//       isMounted = false;
-//       if (isPlaying.current) {
-//         console.log('Stopping audio on unmount');
-//         audioRecorderPlayer.stopPlayer().catch(() => {});
-//         audioRecorderPlayer.removePlayBackListener(playbackListener);
-//       }
-//     };
-//   }, [query, textQuery]);
-
-//   const handleSearch = () => {
-//     if (input.trim()) {
-//       fetchSearchResults(input);
-//     }
-//   };
-
-//   const cardPress = () => {};
-
-//   const renderItem = ({item}: {item: SearchResult}) => (
-//     <ItemCard item={item} onPress={cardPress} />
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.mainContainerStyle}>
-//         <TextInput
-//           placeholder="Enter Product"
-//           style={styles.inputStyle}
-//           value={input}
-//           onChangeText={setInput}
-//         />
-//         <TouchableOpacity onPress={handleSearch} style={styles.containerImage}>
-//           <Image
-//             source={require('../assets/images/send.png')}
-//             style={styles.imageStyle}
-//           />
-//         </TouchableOpacity>
-//       </View>
-//       {loading ? (
-//         <ActivityIndicator
-//           style={styles.activityIndicator}
-//           size={20}
-//           color={'#FF5722'}
-//         />
-//       ) : (
-//         <FlatList
-//           data={searchResults}
-//           renderItem={renderItem}
-//           keyExtractor={(item, index) => index.toString()}
-//           contentContainerStyle={styles.resultsContainer}
-//           ListEmptyComponent={
-//             <Text style={styles.noResultsText}>No results found</Text>
-//           }
-//         />
-//       )}
-//     </View>
-//   );
-// };
-
-// export default SearchResultsScreen;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   activityIndicator: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   mainContainerStyle: {
-//     marginTop: 20,
-//     flexDirection: 'row',
-//     alignSelf: 'center',
-//   },
-//   imageStyle: {
-//     right: 3,
-//   },
-//   containerImage: {
-//     width: 46,
-//     height: 46,
-//     backgroundColor: '#FF5722',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderRadius: 23,
-//     marginLeft: 10,
-//   },
-//   inputStyle: {
-//     borderWidth: 1,
-//     padding: 10,
-//     borderColor: '#E0E0E0',
-//     borderRadius: 24.5,
-//     width: '75%',
-//   },
-//   resultsContainer: {
-//     padding: 20,
-//   },
-//   itemCard: {
-//     padding: 10,
-//     borderWidth: 1,
-//     borderColor: '#E0E0E0',
-//     borderRadius: 8,
-//     marginBottom: 10,
-//     width: '90%',
-//     alignSelf: 'center',
-//   },
-//   noResultsText: {
-//     marginTop: 20,
-//     fontSize: 16,
-//     color: '#999',
-//   },
-//   loadingText: {
-//     marginTop: 20,
-//     fontSize: 16,
-//     color: '#666',
-//   },
-// });
-
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useMemo} from 'react';
 import {
   View,
   StyleSheet,
@@ -240,11 +8,14 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import ItemCard from '../components/ItemCard';
+import Tts from 'react-native-tts';
+import LoadingModal from '../components/animationLoader';
 
 interface SearchResult {
   title: string;
@@ -265,7 +36,7 @@ interface SearchResponse {
   results: SearchResult[];
 }
 
-const SearchResultsScreen = ({route}) => {
+const SearchResultsScreen = ({route, navigation}) => {
   const {query, textQuery} = route.params || {};
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [input, setInput] = useState(textQuery || '');
@@ -273,6 +44,10 @@ const SearchResultsScreen = ({route}) => {
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
   const isPlaying = useRef(false);
   const playbackListener = useRef<any>(null);
+  const [micRecording, setMicRecording] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [tempQuery, setTempQuery] = useState<SearchResponse>();
+  const [isVoiceSearch, setIsVoiceSearch] = useState(false);
 
   const fetchSearchResults = async (searchQuery: string) => {
     setLoading(true);
@@ -299,9 +74,38 @@ const SearchResultsScreen = ({route}) => {
     }
   };
 
+  const startRecording = async () => {
+    setMicRecording(true);
+    setIsVoiceSearch(true); // Set search type to voice
+    try {
+      const result = await audioRecorderPlayer.startRecorder();
+      console.log('Recording started:', result);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const correctFileUri = (filePath: string) => {
+    if (filePath.startsWith('file:////')) {
+      return filePath.replace('file:////', 'file:///');
+    }
+    return filePath;
+  };
+
+  const stopRecording = async () => {
+    try {
+      const result = await audioRecorderPlayer.stopRecorder();
+      audioRecorderPlayer.removeRecordBackListener();
+      setMicRecording(false);
+      console.log('Recording stopped, file:', result);
+      sendAudioToApi(result);
+    } catch (error) {
+      console.error('Error stopping recording:', error);
+    }
+  };
+
   const handlePlayAudio = async (audioUrl: string) => {
     try {
-      // Stop any existing playback
       await audioRecorderPlayer.stopPlayer();
       if (playbackListener.current) {
         audioRecorderPlayer.removePlayBackListener(playbackListener.current);
@@ -325,7 +129,7 @@ const SearchResultsScreen = ({route}) => {
               playbackListener.current = null;
             }
             isPlaying.current = false;
-          }, 500);
+          }, 1000);
         }
       });
     } catch (error) {
@@ -334,10 +138,52 @@ const SearchResultsScreen = ({route}) => {
     }
   };
 
+  const sendAudioToApi = async (filePath: string) => {
+    setVisible(true);
+    const token = await AsyncStorage.getItem('jwtToken');
+    Tts.speak('Processing your request, please wait.');
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: Platform.OS === 'android' ? correctFileUri(filePath) : filePath,
+      type: 'audio/m4a',
+      name: 'recording.m4a',
+    });
+
+    try {
+      const response = await fetch(
+        'https://corto-dev.axcelerateai.com/voice_search?response_type=File_Path&include_discount_info=true',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        },
+      );
+
+      const json: SearchResponse = await response.json();
+      if (response.status === 200) {
+        setVisible(false);
+        setTempQuery(json);
+        navigation.setParams({query: null});
+      }
+    } catch (error) {
+      setVisible(false);
+      console.error('Error sending audio to API:', error);
+      Tts.speak('There was an error processing your request.');
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
 
-    if (query?.audio_path) {
+    if (tempQuery?.audio_path) {
+      handlePlayAudio(tempQuery.audio_path);
+      setSearchResults(tempQuery.results || []);
+    } else if (query?.audio_path) {
+      setIsVoiceSearch(true);
       handlePlayAudio(query.audio_path);
       setSearchResults(query.results || []);
     } else if (textQuery) {
@@ -354,21 +200,26 @@ const SearchResultsScreen = ({route}) => {
         }
       }
     };
-  }, [query, textQuery]);
+  }, [query, textQuery, tempQuery]);
 
   const handleSearch = () => {
     if (input.trim()) {
+      setIsVoiceSearch(false); // Set search type to text
       fetchSearchResults(input);
     }
   };
 
-  const cardPress = () => {
-    // Handle item card press if needed
-  };
-
   const renderItem = ({item}: {item: SearchResult}) => (
-    <ItemCard item={item} onPress={cardPress} />
+    <ItemCard item={item} onPress={() => {}} />
   );
+
+  const animationLoading = useMemo(() => {
+    return <LoadingModal visible={visible} />;
+  }, [visible]);
+
+  if (visible) {
+    return <>{animationLoading}</>;
+  }
 
   return (
     <View style={styles.container}>
@@ -386,12 +237,31 @@ const SearchResultsScreen = ({route}) => {
             style={styles.imageStyle}
           />
         </TouchableOpacity>
-        {query?.audio_path && (
+        <TouchableOpacity
+          onPressIn={startRecording}
+          onPressOut={stopRecording}
+          style={styles.speakerIcon}>
+          <Image
+            source={require('../assets/images/mic.png')}
+            style={{
+              width: 24,
+              height: 24,
+              tintColor: '#fff',
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.resultHeader}>
+        <Text style={styles.resultHeaderText}>Result</Text>
+        {/* Conditionally render speaker button */}
+        {isVoiceSearch && (query?.audio_path || tempQuery?.audio_path) && (
           <TouchableOpacity
-            onPress={() => handlePlayAudio(query.audio_path)}
-            style={styles.containerImage}>
+            onPress={() =>
+              handlePlayAudio(tempQuery?.audio_path || query.audio_path)
+            }
+            style={styles.speakerIcon}>
             <Image
-              source={require('../assets/images/mic.png')}
+              source={require('../assets/images/speakerIcon2.png')}
               style={styles.imageStyle}
             />
           </TouchableOpacity>
@@ -443,6 +313,27 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     backgroundColor: '#FF5722',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 23,
+    marginLeft: 10,
+  },
+  resultHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  resultHeaderText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FF5722',
+  },
+  speakerIcon: {
+    width: 46,
+    height: 46,
+    backgroundColor: '#008080',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 23,
