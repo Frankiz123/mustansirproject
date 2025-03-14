@@ -252,7 +252,7 @@ const SearchResultsScreen = ({route, navigation}) => {
         </TouchableOpacity>
       </View>
       <View style={styles.resultHeader}>
-        <Text style={styles.resultHeaderText}>Result</Text>
+        <Text style={styles.resultHeaderText}>Results</Text>
         {/* Conditionally render speaker button */}
         {isVoiceSearch && (query?.audio_path || tempQuery?.audio_path) && (
           <TouchableOpacity
@@ -261,7 +261,7 @@ const SearchResultsScreen = ({route, navigation}) => {
             }
             style={styles.speakerIcon}>
             <Image
-              source={require('../assets/images/speakerIcon2.png')}
+              source={require('../assets/images/volumeIcon.png')}
               style={styles.imageStyle}
             />
           </TouchableOpacity>
@@ -348,7 +348,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   resultsContainer: {
-    padding: 20,
+    // padding: 20,
+    paddingVertical: 10,
   },
   noResultsText: {
     marginTop: 20,
