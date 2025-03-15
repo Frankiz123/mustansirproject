@@ -48,6 +48,7 @@ const SearchResultsScreen = ({route, navigation}) => {
   const [visible, setVisible] = useState(false);
   const [tempQuery, setTempQuery] = useState<SearchResponse>();
   const [isVoiceSearch, setIsVoiceSearch] = useState(false);
+  const [isRecordingStarted, setIsRecordingStarted] = useState(false);
 
   const fetchSearchResults = async (searchQuery: string) => {
     setLoading(true);
@@ -76,7 +77,8 @@ const SearchResultsScreen = ({route, navigation}) => {
 
   const startRecording = async () => {
     setMicRecording(true);
-    setIsVoiceSearch(true); // Set search type to voice
+    setIsVoiceSearch(true);
+    setIsRecordingStarted(true);
     try {
       const result = await audioRecorderPlayer.startRecorder();
       console.log('Recording started:', result);
@@ -93,10 +95,13 @@ const SearchResultsScreen = ({route, navigation}) => {
   };
 
   const stopRecording = async () => {
+    if (!isRecordingStarted) return;
+
     try {
       const result = await audioRecorderPlayer.stopRecorder();
       audioRecorderPlayer.removeRecordBackListener();
       setMicRecording(false);
+      setIsRecordingStarted(false);
       console.log('Recording stopped, file:', result);
       sendAudioToApi(result);
     } catch (error) {
@@ -137,11 +142,24 @@ const SearchResultsScreen = ({route, navigation}) => {
       isPlaying.current = false;
     }
   };
+  const speakWithDelay = async () => {
+    Tts.speak('Processing your request, please wait.');
+
+    await new Promise(resolve => setTimeout(resolve, 700));
+    Tts.speak('Searching on Amazon');
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    Tts.speak('Searching on Slick deals');
+
+    await new Promise(resolve => setTimeout(resolve, 700));
+    Tts.speak('Searching on Walmart');
+  };
 
   const sendAudioToApi = async (filePath: string) => {
     setVisible(true);
     const token = await AsyncStorage.getItem('jwtToken');
-    Tts.speak('Processing your request, please wait.');
+
+    speakWithDelay();
 
     const formData = new FormData();
     formData.append('file', {
@@ -204,7 +222,7 @@ const SearchResultsScreen = ({route, navigation}) => {
 
   const handleSearch = () => {
     if (input.trim()) {
-      setIsVoiceSearch(false); // Set search type to text
+      setIsVoiceSearch(false);
       fetchSearchResults(input);
     }
   };
@@ -238,8 +256,9 @@ const SearchResultsScreen = ({route, navigation}) => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          onPressIn={startRecording}
+          onLongPress={startRecording}
           onPressOut={stopRecording}
+          delayLongPress={500}
           style={styles.speakerIcon}>
           <Image
             source={require('../assets/images/mic.png')}
@@ -253,7 +272,7 @@ const SearchResultsScreen = ({route, navigation}) => {
       </View>
       <View style={styles.resultHeader}>
         <Text style={styles.resultHeaderText}>Results</Text>
-        {/* Conditionally render speaker button */}
+
         {isVoiceSearch && (query?.audio_path || tempQuery?.audio_path) && (
           <TouchableOpacity
             onPress={() =>
@@ -348,7 +367,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   resultsContainer: {
-    // padding: 20,
     paddingVertical: 10,
   },
   noResultsText: {

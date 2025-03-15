@@ -19,7 +19,6 @@ import Tts from 'react-native-tts';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingModal from '../components/animationLoader';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 interface SearchResult {
   title: string;
@@ -42,14 +41,14 @@ interface SearchResponse {
 
 const SearchScreen = () => {
   const navigation = useNavigation();
-  const [query, setQuery] = useState('');
-  const [apiResult, setApiResult] = useState(null);
+
   const [micRecording, setMicRecording] = useState(false);
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
   const recentSearches = ['Headphones', 'Dress', 'Laptops'];
   const [textQuery, setTextQuery] = useState('');
 
   const [visible, setVisible] = useState(false);
+  const [isRecordingStarted, setIsRecordingStarted] = useState(false);
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -57,7 +56,7 @@ const SearchScreen = () => {
         const granted = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE, // Needed for accessing files
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
         ]);
 
         if (
@@ -77,53 +76,13 @@ const SearchScreen = () => {
       }
     }
   };
-  // const requestPermissions = async () => {
-  //   if (Platform.OS === 'android') {
-  //     try {
-  //       const granted = await PermissionsAndroid.requestMultiple([
-  //         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-  //       ]);
-
-  //       if (
-  //         granted['android.permission.RECORD_AUDIO'] ===
-  //           PermissionsAndroid.RESULTS.GRANTED &&
-  //         granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-  //           PermissionsAndroid.RESULTS.GRANTED &&
-  //         granted['android.permission.READ_EXTERNAL_STORAGE'] ===
-  //           PermissionsAndroid.RESULTS.GRANTED
-  //       ) {
-  //         console.log('Android permissions granted');
-  //       } else {
-  //         console.log('Android permissions denied');
-  //       }
-  //     } catch (err) {
-  //       console.warn('Android permission request error:', err);
-  //     }
-  //   } else if (Platform.OS === 'ios') {
-  //     try {
-  //       const permissionStatus = await check(PERMISSIONS.IOS.MICROPHONE);
-  //       if (permissionStatus !== RESULTS.GRANTED) {
-  //         const result = await request(PERMISSIONS.IOS.MICROPHONE);
-  //         if (result === RESULTS.GRANTED) {
-  //           console.log('iOS microphone permission granted');
-  //         } else {
-  //           console.log('iOS microphone permission denied');
-  //         }
-  //       }
-  //     } catch (err) {
-  //       console.warn('iOS permission request error:', err);
-  //     }
-  //   }
-  // };
 
   useEffect(() => {
     requestPermissions();
   }, []);
 
-  // Start recording when mic button is pressed
   const startRecording = async () => {
+    setIsRecordingStarted(true);
     setMicRecording(true);
     try {
       const result = await audioRecorderPlayer.startRecorder();
@@ -133,12 +92,14 @@ const SearchScreen = () => {
     }
   };
 
-  // Stop recording on button release and send audio to API
   const stopRecording = async () => {
+    if (!isRecordingStarted) return;
+
     try {
       const result = await audioRecorderPlayer.stopRecorder();
       audioRecorderPlayer.removeRecordBackListener();
       setMicRecording(false);
+      setIsRecordingStarted(false);
       console.log('Recording stopped, file:', result);
       sendAudioToApi(result);
     } catch (error) {
@@ -147,25 +108,34 @@ const SearchScreen = () => {
   };
 
   const correctFileUri = filePath => {
-    // If it starts with "file:////", replace with "file:///"
     if (filePath.startsWith('file:////')) {
       return filePath.replace('file:////', 'file:///');
     }
     return filePath;
   };
+  const speakWithDelay = async () => {
+    Tts.speak('Processing your request, please wait.');
 
-  // Send recorded audio file to API endpoint
+    await new Promise(resolve => setTimeout(resolve, 700));
+    Tts.speak('Searching on Amazon');
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    Tts.speak('Searching on Slick deals');
+
+    await new Promise(resolve => setTimeout(resolve, 700));
+    Tts.speak('Searching on Walmart');
+  };
+
   const sendAudioToApi = async filePath => {
     setVisible(true);
     const token = await AsyncStorage.getItem('jwtToken');
-    // Speak filler sentence while processing
-    Tts.speak('Processing your request, please wait.');
 
-    // Prepare audio file as form data
+    speakWithDelay();
+
     const formData = new FormData();
     formData.append('file', {
       uri: Platform.OS === 'android' ? correctFileUri(filePath) : filePath,
-      type: 'audio/m4a', // Adjust mime type as per your recording format
+      type: 'audio/m4a',
       name: 'recording.m4a',
     });
 
@@ -186,18 +156,11 @@ const SearchScreen = () => {
       if (response.status === 200) {
         setVisible(false);
         console.log('api successfull', json, response);
-        // Tts.speak(json.message);
         navigation.navigate('SearchResultsScreen', {
           textQuery: null,
           query: json,
         });
       }
-      // console.log('API response:', json);
-      // setApiResult(json);
-      // // If API returns a result text, speak it out
-      // if (json && json.result) {
-      //   Tts.speak(json.result);
-      // }
     } catch (error) {
       setVisible(false);
       console.error('Error sending audio to API:', error);
@@ -246,7 +209,7 @@ const SearchScreen = () => {
                   onPress={handleSearch}
                   style={[
                     styles.containerImage,
-                    micRecording && styles.sendButtonSmall, // Shrinks when recording
+                    micRecording && styles.sendButtonSmall,
                   ]}>
                   <Image
                     source={require('../assets/images/send.png')}
@@ -254,14 +217,13 @@ const SearchScreen = () => {
                   />
                 </TouchableOpacity>
 
-                {/* Mic Button: onPressIn starts recording, onPressOut stops */}
-
                 <TouchableOpacity
-                  onPressIn={startRecording}
+                  onLongPress={startRecording}
                   onPressOut={stopRecording}
+                  delayLongPress={500}
                   style={[
                     styles.micButton,
-                    micRecording && styles.micButtonActive, // Apply larger size when recording
+                    micRecording && styles.micButtonActive,
                   ]}>
                   <Image
                     source={require('../assets/images/mic.png')}
@@ -269,13 +231,6 @@ const SearchScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-              {/* {apiResult && (
-                <View style={styles.apiResultContainer}>
-                  <Text style={styles.apiResultText}>
-                    {JSON.stringify(apiResult)}
-                  </Text>
-                </View>
-              )} */}
               <View style={styles.footer}>
                 <Text style={styles.footerLabel}>Recent Searches</Text>
                 <View style={styles.containerDotsFooter}>
@@ -343,15 +298,6 @@ const styles = StyleSheet.create({
   imageStyle: {
     right: 3,
   },
-  // micButton: {
-  //   width: 46,
-  //   height: 46,
-  //   backgroundColor: '#008080', // Teal color for mic button
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   borderRadius: 23,
-  //   marginLeft: 10,
-  // },
   micButton: {
     width: 46,
     height: 46,
@@ -360,20 +306,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 23,
     marginLeft: 10,
-    transition: 'all 0.2s ease-in-out', // Smooth transition
+    transition: 'all 0.2s ease-in-out',
   },
   micButtonActive: {
-    width: 56, // Increase size when pressed
+    width: 56,
     height: 56,
-    borderRadius: 28, // Keep it circular
-    backgroundColor: '#007070', // Slightly darker color for effect
+    borderRadius: 28,
+    backgroundColor: '#007070',
   },
 
   sendButtonSmall: {
-    width: 36, // Smaller size when mic is held
+    width: 36,
     height: 36,
-    borderRadius: 18, // Keep proportions circular
-    backgroundColor: '#D84315', // Optional: change color slightly for effect
+    borderRadius: 18,
+    backgroundColor: '#D84315',
   },
 
   micImageStyle: {
