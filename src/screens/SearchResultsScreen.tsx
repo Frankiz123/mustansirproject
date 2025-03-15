@@ -248,6 +248,7 @@ const SearchResultsScreen = ({route, navigation}) => {
           value={input}
           onChangeText={setInput}
           onSubmitEditing={handleSearch}
+          placeholderTextColor="gray"
         />
         <TouchableOpacity onPress={handleSearch} style={styles.containerImage}>
           <Image

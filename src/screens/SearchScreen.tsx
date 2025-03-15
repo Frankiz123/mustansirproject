@@ -204,6 +204,7 @@ const SearchScreen = () => {
                   style={styles.inputStyle}
                   value={textQuery}
                   onChangeText={setTextQuery}
+                  placeholderTextColor="gray"
                 />
                 <TouchableOpacity
                   onPress={handleSearch}
