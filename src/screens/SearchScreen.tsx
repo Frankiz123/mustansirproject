@@ -19,25 +19,14 @@ import Tts from 'react-native-tts';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoadingModal from '../components/animationLoader';
-
-interface SearchResult {
-  title: string;
-  price: number;
-  source: string;
-  link: string;
-  thumbnail: string;
-  rating: number;
-  discount: string | null;
-  delivery: string | null;
-  email_discount: string | null;
-  email_coupon_code: string | null;
-}
-
-interface SearchResponse {
-  message: string;
-  audio_path: string;
-  results: SearchResult[];
-}
+import Sound from 'react-native-sound';
+import RNFS from 'react-native-fs';
+import {
+  processingRequestSound,
+  searchAmazon,
+  slickDeals,
+  walmart,
+} from '../utils/voiceConstants';
 
 const SearchScreen = () => {
   const navigation = useNavigation();
@@ -82,6 +71,7 @@ const SearchScreen = () => {
   }, []);
 
   const startRecording = async () => {
+    setTextQuery('');
     setIsRecordingStarted(true);
     setMicRecording(true);
     try {
@@ -113,19 +103,52 @@ const SearchScreen = () => {
     }
     return filePath;
   };
+
   const speakWithDelay = async () => {
-    Tts.speak('Processing your request, please wait.');
+    try {
+      const processingAudioPath = `${RNFS.DocumentDirectoryPath}/processing.m4a`;
+      await RNFS.writeFile(
+        processingAudioPath,
+        processingRequestSound,
+        'base64',
+      );
 
-    await new Promise(resolve => setTimeout(resolve, 700));
-    Tts.speak('Searching on Amazon');
+      const playSound = (path: string) => {
+        return new Promise<void>((resolve, reject) => {
+          const sound = new Sound(path, '', error => {
+            if (error) {
+              console.error('Audio playback error:', error);
+              reject(error);
+              return;
+            }
+            sound.play(success => {
+              sound.release();
+              if (success) {
+                resolve();
+              } else {
+                reject(new Error('Playback failed'));
+              }
+            });
+          });
+        });
+      };
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-    Tts.speak('Searching on Slick deals');
+      await playSound(processingAudioPath);
 
-    await new Promise(resolve => setTimeout(resolve, 700));
-    Tts.speak('Searching on Walmart');
+      const playWithDelay = async (base64Audio: string, delay: number) => {
+        const audioPath = `${RNFS.DocumentDirectoryPath}/temp.m4a`;
+        await RNFS.writeFile(audioPath, base64Audio, 'base64');
+        await new Promise(resolve => setTimeout(resolve, delay));
+        await playSound(audioPath);
+      };
+
+      await playWithDelay(searchAmazon, 500);
+      await playWithDelay(slickDeals, 500);
+      await playWithDelay(walmart, 500);
+    } catch (error) {
+      console.error('Error in speakWithDelay:', error);
+    }
   };
-
   const sendAudioToApi = async filePath => {
     setVisible(true);
     const token = await AsyncStorage.getItem('jwtToken');
@@ -141,7 +164,7 @@ const SearchScreen = () => {
 
     try {
       const response = await fetch(
-        'https://corto-dev.axcelerateai.com/voice_search?response_type=File_Path&include_discount_info=true',
+        'https://corto-dev.axcelerateai.com/voice_search_bytes?include_discount_info=true',
         {
           method: 'POST',
           headers: {
@@ -152,10 +175,11 @@ const SearchScreen = () => {
         },
       );
 
-      const json: SearchResponse = await response.json();
+      const json = await response.json();
       if (response.status === 200) {
         setVisible(false);
-        console.log('api successfull', json, response);
+        console.log('API successful', json);
+
         navigation.navigate('SearchResultsScreen', {
           textQuery: null,
           query: json,
@@ -167,7 +191,6 @@ const SearchScreen = () => {
       Tts.speak('There was an error processing your request.');
     }
   };
-
   const handleSearch = () => {
     if (textQuery.trim()) {
       navigation.navigate('SearchResultsScreen', {textQuery, voiceQuery: null});

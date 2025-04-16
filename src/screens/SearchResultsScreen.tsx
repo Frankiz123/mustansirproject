@@ -16,6 +16,14 @@ import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import ItemCard from '../components/ItemCard';
 import Tts from 'react-native-tts';
 import LoadingModal from '../components/animationLoader';
+import Sound from 'react-native-sound';
+import RNFS from 'react-native-fs';
+import {
+  processingRequestSound,
+  searchAmazon,
+  slickDeals,
+  walmart,
+} from '../utils/voiceConstants';
 
 interface SearchResult {
   title: string;
@@ -32,7 +40,7 @@ interface SearchResult {
 
 interface SearchResponse {
   message: string;
-  audio_path: string;
+  base64_audio: string;
   results: SearchResult[];
 }
 
@@ -76,6 +84,7 @@ const SearchResultsScreen = ({route, navigation}) => {
   };
 
   const startRecording = async () => {
+    setInput('');
     setMicRecording(true);
     setIsVoiceSearch(true);
     setIsRecordingStarted(true);
@@ -110,49 +119,63 @@ const SearchResultsScreen = ({route, navigation}) => {
   };
 
   const handlePlayAudio = async (audioUrl: string) => {
-    try {
-      await audioRecorderPlayer.stopPlayer();
-      if (playbackListener.current) {
-        audioRecorderPlayer.removePlayBackListener(playbackListener.current);
-        playbackListener.current = null;
+    const audioPath = `${RNFS.DocumentDirectoryPath}/response.m4a`;
+    await RNFS.writeFile(audioPath, audioUrl, 'base64');
+
+    const sound = new Sound(audioPath, '', error => {
+      if (error) {
+        console.error('Audio playback error:', error);
+        return;
       }
-
-      console.log('Starting audio playback:', audioUrl);
-      await audioRecorderPlayer.startPlayer(audioUrl);
-      isPlaying.current = true;
-
-      playbackListener.current = audioRecorderPlayer.addPlayBackListener(e => {
-        console.log(`Playback progress: ${e.currentPosition}/${e.duration}`);
-
-        if (e.currentPosition >= e.duration - 0.5) {
-          setTimeout(async () => {
-            await audioRecorderPlayer.stopPlayer();
-            if (playbackListener.current) {
-              audioRecorderPlayer.removePlayBackListener(
-                playbackListener.current,
-              );
-              playbackListener.current = null;
-            }
-            isPlaying.current = false;
-          }, 1000);
-        }
+      sound.play(success => {
+        sound.release();
       });
-    } catch (error) {
-      console.error('Playback error:', error);
-      isPlaying.current = false;
-    }
+    });
   };
   const speakWithDelay = async () => {
-    Tts.speak('Processing your request, please wait.');
+    try {
+      const processingAudioPath = `${RNFS.DocumentDirectoryPath}/processing.m4a`;
+      await RNFS.writeFile(
+        processingAudioPath,
+        processingRequestSound,
+        'base64',
+      );
 
-    await new Promise(resolve => setTimeout(resolve, 700));
-    Tts.speak('Searching on Amazon');
+      const playSound = (path: string) => {
+        return new Promise<void>((resolve, reject) => {
+          const sound = new Sound(path, '', error => {
+            if (error) {
+              console.error('Audio playback error:', error);
+              reject(error);
+              return;
+            }
+            sound.play(success => {
+              sound.release();
+              if (success) {
+                resolve();
+              } else {
+                reject(new Error('Playback failed'));
+              }
+            });
+          });
+        });
+      };
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-    Tts.speak('Searching on Slick deals');
+      await playSound(processingAudioPath);
 
-    await new Promise(resolve => setTimeout(resolve, 700));
-    Tts.speak('Searching on Walmart');
+      const playWithDelay = async (base64Audio: string, delay: number) => {
+        const audioPath = `${RNFS.DocumentDirectoryPath}/temp.m4a`;
+        await RNFS.writeFile(audioPath, base64Audio, 'base64');
+        await new Promise(resolve => setTimeout(resolve, delay));
+        await playSound(audioPath);
+      };
+
+      await playWithDelay(searchAmazon, 500);
+      await playWithDelay(slickDeals, 500);
+      await playWithDelay(walmart, 500);
+    } catch (error) {
+      console.error('Error in speakWithDelay:', error);
+    }
   };
 
   const sendAudioToApi = async (filePath: string) => {
@@ -170,7 +193,8 @@ const SearchResultsScreen = ({route, navigation}) => {
 
     try {
       const response = await fetch(
-        'https://corto-dev.axcelerateai.com/voice_search?response_type=File_Path&include_discount_info=true',
+        'https://corto-dev.axcelerateai.com/voice_search_bytes?include_discount_info=true',
+
         {
           method: 'POST',
           headers: {
@@ -197,12 +221,12 @@ const SearchResultsScreen = ({route, navigation}) => {
   useEffect(() => {
     let isMounted = true;
 
-    if (tempQuery?.audio_path) {
-      handlePlayAudio(tempQuery.audio_path);
+    if (tempQuery?.base64_audio) {
+      handlePlayAudio(tempQuery.base64_audio);
       setSearchResults(tempQuery.results || []);
-    } else if (query?.audio_path) {
+    } else if (query?.base64_audio) {
       setIsVoiceSearch(true);
-      handlePlayAudio(query.audio_path);
+      handlePlayAudio(query.base64_audio);
       setSearchResults(query.results || []);
     } else if (textQuery) {
       fetchSearchResults(textQuery);
@@ -210,13 +234,6 @@ const SearchResultsScreen = ({route, navigation}) => {
 
     return () => {
       isMounted = false;
-      if (isPlaying.current) {
-        audioRecorderPlayer.stopPlayer().catch(() => {});
-        if (playbackListener.current) {
-          audioRecorderPlayer.removePlayBackListener(playbackListener.current);
-          playbackListener.current = null;
-        }
-      }
     };
   }, [query, textQuery, tempQuery]);
 
@@ -274,10 +291,10 @@ const SearchResultsScreen = ({route, navigation}) => {
       <View style={styles.resultHeader}>
         <Text style={styles.resultHeaderText}>Results</Text>
 
-        {isVoiceSearch && (query?.audio_path || tempQuery?.audio_path) && (
+        {isVoiceSearch && (query?.base64_audio || tempQuery?.base64_audio) && (
           <TouchableOpacity
             onPress={() =>
-              handlePlayAudio(tempQuery?.audio_path || query.audio_path)
+              handlePlayAudio(tempQuery?.base64_audio || query.base64_audio)
             }
             style={styles.speakerIcon}>
             <Image
