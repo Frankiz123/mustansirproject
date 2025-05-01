@@ -50,8 +50,8 @@ const SearchResultsScreen = ({route, navigation}) => {
   const [input, setInput] = useState(textQuery || '');
   const [loading, setLoading] = useState(false);
   const audioRecorderPlayer = useRef(new AudioRecorderPlayer()).current;
-  const isPlaying = useRef(false);
-  const playbackListener = useRef<any>(null);
+  // const isPlaying = useRef(false);
+  // const playbackListener = useRef<any>(null);
   const [micRecording, setMicRecording] = useState(false);
   const [visible, setVisible] = useState(false);
   const [tempQuery, setTempQuery] = useState<SearchResponse>();

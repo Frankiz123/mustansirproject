@@ -120,17 +120,6 @@ const ReadEmail: React.FC<IReadEmail> = () => {
           )}
         </TouchableOpacity>
       </View>
-
-      {/* <TouchableOpacity
-        disabled={readEmailLoading}
-        style={styles.buttonStyle}
-        onPress={callReadEmail}>
-        {readEmailLoading ? (
-          <ActivityIndicator color={'white'} size={20} />
-        ) : (
-          <Text style={styles.buttonLabel}>Read Email</Text>
-        )}
-      </TouchableOpacity> */}
     </View>
   );
 };

@@ -48,7 +48,7 @@ const RegisterScreen = () => {
     navigation.goBack();
   };
 
-  const validateInputs = () => {
+  const validateInputs = useCallback(() => {
     let isValid = true;
 
     if (!name.trim()) {
@@ -89,7 +89,7 @@ const RegisterScreen = () => {
     }
 
     return isValid;
-  };
+  }, [confirmPasswordValue, email, name, passwordValue]);
 
   const callApiSignUp = useCallback(async () => {
     if (!validateInputs()) return;
@@ -129,7 +129,15 @@ const RegisterScreen = () => {
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  }, [confirmPasswordValue, dispatch, email, name, passwordValue, navigation]);
+  }, [
+    validateInputs,
+    dispatch,
+    name,
+    email,
+    passwordValue,
+    confirmPasswordValue,
+    navigation,
+  ]);
 
   return (
     <SafeAreaView style={styles.container}>
