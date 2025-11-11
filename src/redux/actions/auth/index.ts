@@ -52,6 +52,7 @@ export const registerApiHandler = createAsyncThunk(
       console.log('auth Register Response ::: ', response);
       return response.data.detail;
     } catch (error: any) {
+      console.log('error', error);
       return rejectWithValue(error.response?.data?.detail || 'Register failed');
     }
   },
